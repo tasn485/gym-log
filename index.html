@@ -144,6 +144,13 @@
 
   .toast{ position:fixed; left:50%; bottom:calc(92px + env(safe-area-inset-bottom)); transform:translateX(-50%) translateY(20px); background:var(--ink); color:#0d1117; padding:12px 20px; border-radius:999px; font-size:var(--fs-body); font-weight:700; opacity:0; transition:.25s; z-index:80; pointer-events:none; white-space:nowrap; box-shadow:0 6px 24px rgba(0,0,0,.45); }
   .toast.on{ opacity:1; transform:translateX(-50%) translateY(0); }
+  .toast.act{ pointer-events:auto; }
+  .toast .tact{ border:none; background:none; color:#0d1117; text-decoration:underline; font-weight:700; font-size:inherit; font-family:inherit; margin-left:10px; padding:6px 2px; }
+
+  /* iOSの数値キーパッドに閉じるキーが無い対策：フォーカス中だけ出る完了バー */
+  .kbbar{ position:fixed; left:0; top:0; width:100%; display:none; justify-content:flex-end; background:rgba(20,27,35,.97); border-top:1px solid var(--line2); border-bottom:1px solid var(--line); z-index:70; }
+  .kbbar.on{ display:flex; }
+  .kbbar button{ border:none; background:none; color:var(--accent); font-weight:700; font-size:.95rem; padding:11px 18px; min-height:44px; }
 
   /* 信頼度ドット（目安重量の確度：緑=確定/黄=推定/赤=要実測） */
   .dot{ display:inline-block; width:7px; height:7px; border-radius:50%; margin-left:6px; vertical-align:1px; }
@@ -217,6 +224,8 @@
   </div>
 </div>
 
+<div class="kbbar" id="kbbar"><button id="kbdone" type="button">完了</button></div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -247,12 +256,12 @@ const META = {
     cues:['肘を体側に固定','肘から先だけ動かす'], alt:'ダンベル・キックバック/フレンチプレス' },
   'アブドミナル':{ gear:'マシン', muscle:'腹直筋', weight:'25kg', wlabel:'<span class="dot g"></span>', setrep:'2〜3×15', rest:'60〜90秒',
     cues:['腰を反らせず腹で持ち上げる','息を吐きながら丸める'] },
-  'ラットプルダウン':{ gear:'マシン', muscle:'広背筋（広がり）', weight:'17.5〜20kg', wlabel:'<span class="dot y"></span>', setrep:'3〜4×10-12', rest:'60〜75秒',
+  'ラットプルダウン':{ gear:'マシン', muscle:'広背筋（広がり）', weight:'17.5〜20kg', wlabel:'<span class="dot y"></span>', setrep:'3〜4×10-12', rest:'60〜75秒', progLock:true,
     cues:['脇の下〜背中の外側を意識・腕に逃がさない','肩甲骨を先に下げてから引く','胸の上部まで引く（可動域を深く）','下ろし2〜3秒＋タメ1秒'], prog:'背中に効く感覚とフルレンジが安定してから漸増（今はフォーム習得中）' },
-  'ラットプルダウン(ワイド)':{ gear:'マシン', muscle:'広背筋（外側・広がり）', weight:'25kg', wlabel:'<span class="dot g"></span>', setrep:'3×10-12', rest:'60〜75秒',
-    cues:['ワイドグリップで背中の外側に効かせる','肩甲骨先行・腕で引かない'] },
-  'ワンハンド・ダンベルロー':{ gear:'ダンベル＋ベンチ', muscle:'広背筋・僧帽筋（厚み）', weight:'片手4kg', wlabel:'<span class="dot y"></span>', setrep:'3〜4×10-12', rest:'60〜75秒',
-    cues:['サムレスで握る','肘で引く・肩甲骨を先に動かす','みぞおち脇まで引く','腕に効くなら背中に入る重さへ調整'], alt:'スミス・ベントオーバーロー（シーテッドロー代替）' },
+  'ラットプルダウン(ワイド)':{ gear:'マシン', muscle:'広背筋（外側・広がり）', weight:'17.5〜20kg', wlabel:'<span class="dot y"></span>', setrep:'3×10-12', rest:'60〜75秒', progLock:true,
+    cues:['ワイドグリップで背中の外側に効かせる','肩甲骨先行・腕で引かない'], prog:'標準グリップと同じくフォーム習得中＝背中に効く感覚が安定してから漸増' },
+  'ワンハンド・ダンベルロー':{ gear:'ダンベル＋ベンチ', muscle:'広背筋・僧帽筋（厚み）', weight:'片手4kg', wlabel:'<span class="dot y"></span>', setrep:'3〜4×10-12', rest:'60〜75秒', progLock:true,
+    cues:['サムレスで握る','肘で引く・肩甲骨を先に動かす','みぞおち脇まで引く','腕に効くなら背中に入る重さへ調整'], alt:'スミス・ベントオーバーロー（シーテッドロー代替）', prog:'背中で引ける感覚が安定するまで重量は増やさない' },
   'リアレイズ':{ gear:'ダンベル/ケーブル', muscle:'後部三角筋', weight:'片手4kg', wlabel:'<span class="dot g"></span>', setrep:'2〜3×15', rest:'60〜90秒',
     cues:['反動なし・上で1秒','後肩＝猫背・姿勢に効く'] },
   'ダンベルカール':{ gear:'ダンベル', muscle:'上腕二頭筋', weight:'片手4kg', wlabel:'<span class="dot g"></span>', setrep:'3×12-15', rest:'60〜90秒',
@@ -261,7 +270,7 @@ const META = {
     cues:['綺麗に出せる重さで','X脚の中臀筋を強化','締め27kgはレップを3→6→8で橋渡し'] },
   'ヒップスラスト':{ gear:'スミス＋ベンチ', muscle:'大殿筋', weight:'両側5kgずつ→次回両側7.5kgずつ', wlabel:'<span class="dot g"></span>', setrep:'3〜4×8-12', rest:'2〜3分',
     cues:['フルROMで下げる','頂点で骨盤を後傾させてお尻をロック','腰を反らせない（反り腰の矯正にもなる）','反動を使わない'], prog:'8-12が安定したら両側+2.5kgずつ' },
-  'ルーマニアンDL':{ gear:'ダンベル/スミス', muscle:'ハムストリング・大殿筋', weight:'空バー維持', wlabel:'<span class="dot y"></span>', setrep:'3×8-10', rest:'2〜3分',
+  'ルーマニアンDL':{ gear:'ダンベル/スミス', muscle:'ハムストリング・大殿筋', weight:'空バー維持', wlabel:'<span class="dot y"></span>', setrep:'3×8-10', rest:'2〜3分', progLock:true,
     cues:['尻を後ろへ引く（ヒンジ）','膝は軽く曲げて固定・伸ばしきらない','背中はまっすぐ','もも裏が伸びて背が丸まる直前で止める'], prog:'フォームが安定するまで重量は増やさない' },
   'レッグプレス':{ gear:'マシン', muscle:'大殿筋・ハムストリング', weight:'100〜105kg', wlabel:'<span class="dot g"></span>', setrep:'3〜4×10-12', rest:'2〜3分',
     cues:['足は高め・やや広め・つま先やや外','膝はロックしない','深く下ろしすぎない'], prog:'全セット挙げきれたら+5kg' },
@@ -365,7 +374,8 @@ function accBlock(title, items){
   return `<details class="acc"><summary>${escHtml(title)}</summary><div class="body"><ul>${items.map(x=>`<li>${escHtml(x)}</li>`).join('')}</ul></div></details>`;
 }
 
-/* 漸増サジェスト：前回の全セットが上限レップに達していたら「上げる合図」を出す（アプリ内計算＝Claude不要） */
+/* 漸増サジェスト：前回の全セットが上限レップに達していたら候補を出す（アプリ内計算＝Claude不要）
+   progLock:true の種目（フォーム習得中）はレップ数を満たしてもサジェストしない */
 function repMax(setrep){
   const parts = String(setrep).split(/×|x/);
   if(parts.length < 2) return null;                 // 「3セット（秒で記録）」等は対象外
@@ -374,6 +384,7 @@ function repMax(setrep){
 }
 function readyToProgress(name, prev){
   const meta = META[name]; if(!meta || !prev) return false;
+  if(meta.progLock) return false;
   const rm = repMax(meta.setrep); if(!rm) return false;
   const done = prev.sets.filter(st=> String(st.w).trim()!=='' || String(st.r).trim()!=='');
   if(done.length < 2) return false;                 // 1セットだけの日は判定しない
@@ -419,7 +430,7 @@ function exCard(ex,i){
     prevHtml = `<div class="prev"><span class="pv">前回 <b>${txt}</b> <span class="pd">${p.date.slice(5)}</span></span><button class="copyprev" data-copyprev="${i}">前回を入れる</button></div>`;
     if(readyToProgress(ex.name, p)){
       const dumb = meta && /ダンベル/.test(meta.gear||'');
-      prevHtml += `<div class="sug">✓ 前回、全セット上限レップ達成。今日は一段上げてみる合図（目安 ${dumb?'+1〜2kg':'+2.5kg'}）</div>`;
+      prevHtml += `<div class="sug">✓ 前回、全セット上限レップ達成。最後の2〜3回がキツかったなら ${dumb?'+1〜2kg':'+2.5kg'} を試す候補。まだ余裕があったなら据え置き</div>`;
     }
   }
 
@@ -484,8 +495,31 @@ document.getElementById('exercises').addEventListener('input', e=>{
 document.getElementById('exercises').addEventListener('click', e=>{
   const t = e.target.closest('button'); if(!t) return;
   if(t.dataset.addset!=null){ cur.exercises[+t.dataset.addset].sets.push({w:'',r:''}); save(); render(); }
-  else if(t.dataset.delset!=null){ const [i,j]=t.dataset.delset.split('_').map(Number); cur.exercises[i].sets.splice(j,1); if(!cur.exercises[i].sets.length) cur.exercises[i].sets.push({w:'',r:''}); save(); render(); }
-  else if(t.dataset.delex!=null){ cur.exercises.splice(+t.dataset.delex,1); save(); render(); }
+  else if(t.dataset.delset!=null){
+    const [i,j] = t.dataset.delset.split('_').map(Number);
+    const ex = cur.exercises[i];
+    const st = ex.sets[j];
+    const hadData = String(st.w).trim()!=='' || String(st.r).trim()!=='';
+    const snap = JSON.parse(JSON.stringify(ex.sets));
+    const date = cur.date, name = ex.name;
+    ex.sets.splice(j,1);
+    if(!ex.sets.length) ex.sets.push({w:'',r:''});
+    save(); render();
+    if(hadData){
+      toast('セットを削除しました', '元に戻す', ()=>{
+        const e2 = cur.exercises[i];
+        if(cur.date!==date || !e2 || e2.name!==name) return;
+        e2.sets = snap; save(); render();
+      });
+    }
+  }
+  else if(t.dataset.delex!=null){
+    const i = +t.dataset.delex;
+    const ex = cur.exercises[i];
+    const hasData = ex.note.trim() || ex.sets.some(st=> String(st.w).trim()!=='' || String(st.r).trim()!=='');
+    if(hasData && !confirm(`「${ex.name}」を削除しますか？\n入力済みの記録も消えます`)) return;
+    cur.exercises.splice(i,1); save(); render();
+  }
   else if(t.dataset.copyprev!=null){
     const ex = cur.exercises[+t.dataset.copyprev];
     const p = prevOf(ex.name);
@@ -574,9 +608,51 @@ document.querySelectorAll('.overlay').forEach(ov=>{
   ov.addEventListener('click', e=>{ if(e.target===ov || e.target.dataset.close!=null) ov.classList.remove('on'); });
 });
 
-/* toast */
+/* キーボード上の完了バー */
+const kbbar = document.getElementById('kbbar');
+function placeKbbar(){
+  if(!kbbar.classList.contains('on')) return;
+  const vv = window.visualViewport;
+  if(vv){ kbbar.style.top = Math.max(0, vv.offsetTop + vv.height - kbbar.offsetHeight) + 'px'; }
+  else { kbbar.style.top = 'auto'; kbbar.style.bottom = '0'; }
+}
+document.addEventListener('focusin', e=>{
+  if(e.target.matches('input:not([type=date]),textarea')){ kbbar.classList.add('on'); requestAnimationFrame(placeKbbar); }
+});
+document.addEventListener('focusout', ()=>{
+  setTimeout(()=>{
+    const a = document.activeElement;
+    if(!a || !a.matches('input:not([type=date]),textarea')) kbbar.classList.remove('on');
+  }, 80);
+});
+if(window.visualViewport){
+  visualViewport.addEventListener('resize', placeKbbar);
+  visualViewport.addEventListener('scroll', placeKbbar);
+}
+document.getElementById('kbdone').addEventListener('pointerdown', e=>{
+  e.preventDefault();
+  if(document.activeElement) document.activeElement.blur();
+  kbbar.classList.remove('on');
+});
+
+/* toast（actLabel/actFn を渡すと「元に戻す」等のアクション付きになる） */
 let toastT;
-function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('on'),1800); }
+function toast(msg, actLabel, actFn){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  if(actLabel){
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'tact'; b.textContent = actLabel;
+    b.addEventListener('click', ()=>{ el.classList.remove('on','act'); actFn(); });
+    el.appendChild(b);
+    el.classList.add('act');
+  } else {
+    el.classList.remove('act');
+  }
+  el.classList.add('on');
+  clearTimeout(toastT);
+  toastT = setTimeout(()=>el.classList.remove('on','act'), actLabel ? 5000 : 1800);
+}
 
 /* 起動 */
 loadSession(curDate);
