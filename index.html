@@ -4,118 +4,156 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ジム記録">
-<meta name="theme-color" content="#0f6b6b">
+<meta name="theme-color" content="#0d1117">
 <title>ジム記録</title>
 <style>
   :root{
-    --ink:#1f2933; --sub:#5c6b7a; --line:#e2e6ea; --bg:#f4f6f7; --card:#fff;
-    --accent:#0f6b6b; --accent-dark:#0b5050; --hard:#b3402e; --soft:#eef4f4; --gold:#b8863b;
+    --bg:#0d1117; --card:#161b22; --card2:#1c242e;
+    --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.13);
+    --ink:#e6edf3; --sub:#8b98a5;
+    --accent:#2dd4bf; --accent-dim:rgba(45,212,191,.13);
+    --ok:#34d399; --warn:#fbbf24; --ng:#f87171;
+    --fs-title:1.05rem; --fs-num:1.3rem; --fs-body:.875rem; --fs-cap:.75rem;
+    color-scheme:dark;
   }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
-  html,body{ margin:0; padding:0; }
+  html,body{ margin:0; padding:0; background:var(--bg); }
   body{
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
-    color:var(--ink); background:var(--bg); line-height:1.5;
-    padding:0 0 108px; -webkit-text-size-adjust:100%;
+    color:var(--ink); line-height:1.55;
+    padding:0 0 calc(92px + env(safe-area-inset-bottom));
+    -webkit-text-size-adjust:100%;
   }
-  .wrap{ max-width:640px; margin:0 auto; padding:0 14px; }
+  .wrap{ max-width:640px; margin:0 auto; padding:0 16px; }
+  button{ font-family:inherit; cursor:pointer; }
+  button:active{ opacity:.7; }
 
   /* header */
-  header{ background:var(--accent); color:#fff; padding:14px 0 12px; margin-bottom:14px; }
-  header .wrap{ display:flex; flex-direction:column; gap:10px; }
+  header{ background:var(--bg); border-bottom:1px solid var(--line); padding:calc(12px + env(safe-area-inset-top)) 0 14px; margin-bottom:18px; }
+  header .wrap{ display:flex; flex-direction:column; gap:12px; }
   .hrow{ display:flex; align-items:center; gap:8px; }
-  h1{ font-size:1.15rem; margin:0; font-weight:700; letter-spacing:.02em; }
-  .datenav{ display:flex; align-items:center; gap:6px; margin-left:auto; }
-  .datenav button{ width:34px; height:34px; border-radius:8px; border:none; background:rgba(255,255,255,.18); color:#fff; font-size:1.2rem; line-height:1; }
-  input[type=date]{ font-size:.95rem; border:none; border-radius:8px; padding:7px 8px; background:rgba(255,255,255,.95); color:var(--ink); }
-  select#menu{ width:100%; font-size:1rem; padding:9px 10px; border-radius:9px; border:none; background:rgba(255,255,255,.95); color:var(--ink); font-weight:600; }
+  h1{ font-size:1.1rem; margin:0; font-weight:700; letter-spacing:.03em; display:flex; align-items:center; gap:9px; }
+  h1::before{ content:''; width:4px; height:17px; border-radius:2px; background:var(--accent); }
+  .datenav{ display:flex; align-items:center; gap:6px; margin-left:auto; min-width:0; }
+  .datenav button{ width:44px; height:44px; border-radius:12px; border:1px solid var(--line); background:var(--card); color:var(--ink); font-size:1.35rem; line-height:1; flex:none; }
+  input[type=date]{ font-size:.9rem; border:1px solid var(--line); border-radius:12px; padding:0 6px; height:44px; width:122px; min-width:0; background:var(--card); color:var(--ink); font-family:inherit; -webkit-appearance:none; appearance:none; }
+  input[type=date]::-webkit-date-and-time-value{ text-align:center; }
+  select#menu{ width:100%; font-size:.95rem; height:48px; padding:0 42px 0 14px; border-radius:12px; border:1px solid var(--line2); background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%238b98a5' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 16px center; color:var(--ink); font-weight:600; appearance:none; -webkit-appearance:none; font-family:inherit; }
+
+  /* 今日の狙い（テキストブロック・箱なし） */
+  .banner{ margin:0 0 18px; padding:0 2px; font-size:var(--fs-body); font-weight:600; line-height:1.6; }
+  .banner .t{ display:block; font-size:var(--fs-cap); font-weight:700; color:var(--accent); letter-spacing:.08em; margin-bottom:3px; }
+  .banner .sub{ display:block; margin-top:3px; font-size:var(--fs-cap); color:var(--sub); font-weight:500; }
+
+  /* ウォームアップ/クールダウン（罫線区切りの行） */
+  .acc{ border-top:1px solid var(--line); border-bottom:1px solid var(--line); margin:0 0 16px; }
+  .acc>summary{ list-style:none; cursor:pointer; padding:13px 2px; font-weight:600; font-size:var(--fs-body); color:var(--sub); display:flex; align-items:center; min-height:44px; }
+  .acc>summary::-webkit-details-marker{ display:none; }
+  .acc .body{ padding:2px 2px 14px; font-size:var(--fs-body); color:var(--ink); }
+  .acc .body ul{ margin:0; padding-left:1.15em; }
+  .acc .body li{ margin:5px 0; }
+
+  /* 開閉シェブロン共通 */
+  .acc>summary::before, details.cue>summary::before{
+    content:''; display:inline-block; width:7px; height:7px; flex:none;
+    border-right:1.5px solid currentColor; border-bottom:1.5px solid currentColor;
+    transform:rotate(-45deg); transition:transform .18s ease; margin-right:10px;
+  }
+  .acc[open]>summary::before, details.cue[open]>summary::before{ transform:rotate(45deg); }
 
   /* exercise cards */
-  .ex{ background:var(--card); border:1px solid var(--line); border-radius:13px; padding:12px 13px 10px; margin:0 0 12px; }
-  .ex-head{ display:flex; align-items:center; gap:8px; margin-bottom:2px; }
-  .ex-name{ font-weight:700; font-size:1.05rem; flex:1; }
-  .ex-del{ border:none; background:none; color:#c2ccd4; font-size:1.15rem; padding:4px 6px; }
-  .prev{ font-size:.78rem; color:var(--sub); background:var(--soft); border-radius:7px; padding:5px 8px; margin:4px 0 8px; }
-  .prev b{ color:var(--accent); font-weight:700; }
-  .prev .copyprev{ float:right; border:1px solid var(--accent); color:var(--accent); background:#fff; border-radius:999px; font-size:.72rem; padding:2px 9px; font-weight:600; }
+  .ex{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px 16px 14px; margin:0 0 14px; box-shadow:inset 0 1px 0 rgba(255,255,255,.04); }
+  .ex-head{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .ex-order{ display:inline-flex; align-items:center; justify-content:center; min-width:24px; height:24px; border-radius:8px; background:var(--accent-dim); color:var(--accent); font-size:var(--fs-cap); font-weight:700; flex:none; }
+  .ex-name{ font-weight:700; font-size:var(--fs-title); flex:1; min-width:0; line-height:1.35; }
+  .ex-name small{ font-weight:500; color:var(--sub); font-size:var(--fs-cap); margin-left:6px; white-space:nowrap; }
+  .ex-del{ border:none; background:none; color:var(--sub); font-size:var(--fs-cap); padding:10px 2px 10px 12px; flex:none; opacity:.75; }
+  .cue-line{ font-size:var(--fs-body); color:var(--sub); margin:0 0 4px; line-height:1.65; }
 
-  .setrow{ display:flex; align-items:center; gap:7px; margin:6px 0; }
-  .setno{ width:22px; text-align:center; color:var(--sub); font-size:.8rem; font-weight:700; }
-  .field{ display:flex; align-items:center; gap:3px; }
-  .field input{ width:66px; font-size:1.05rem; text-align:center; padding:9px 4px; border:1px solid var(--line); border-radius:9px; background:#fff; color:var(--ink); font-weight:600; }
-  .field .u{ font-size:.8rem; color:var(--sub); min-width:18px; }
-  .times{ color:var(--sub); font-weight:700; }
-  .setdel{ margin-left:auto; border:none; background:none; color:#c2ccd4; font-size:1.05rem; padding:6px; }
-  .ex-note{ width:100%; font-size:.85rem; padding:7px 9px; border:1px dashed var(--line); border-radius:8px; margin-top:6px; color:var(--ink); background:#fcfdfd; }
-  .addset{ border:none; background:var(--soft); color:var(--accent); font-weight:700; font-size:.85rem; border-radius:8px; padding:8px 10px; margin-top:8px; width:100%; }
+  details.cue{ margin:0 0 6px; }
+  details.cue>summary{ list-style:none; cursor:pointer; color:var(--sub); font-size:var(--fs-cap); font-weight:600; padding:9px 0; display:flex; align-items:center; }
+  details.cue>summary::-webkit-details-marker{ display:none; }
+  details.cue>summary span{ display:inline; }
+  .cue-body{ border-left:2px solid var(--line2); padding:2px 2px 2px 12px; margin:2px 0 10px 3px; font-size:var(--fs-body); color:var(--ink); }
+  .cue-body ul{ margin:0; padding-left:1.1em; }
+  .cue-body li{ margin:4px 0; }
+  .cue-body .alt,.cue-body .prog{ color:var(--sub); margin-top:7px; }
+  .cue-body .alt b,.cue-body .prog b{ color:var(--ink); font-weight:600; }
 
-  .addex{ border:2px dashed var(--accent); background:#fff; color:var(--accent); font-weight:700; font-size:.95rem; border-radius:12px; padding:13px; width:100%; margin:2px 0 14px; }
-  .snote-wrap{ margin:0 0 18px; }
-  .snote-wrap label{ font-size:.82rem; color:var(--sub); font-weight:600; display:block; margin-bottom:5px; }
-  textarea#snote{ width:100%; min-height:64px; font-size:.9rem; padding:10px; border:1px solid var(--line); border-radius:10px; resize:vertical; font-family:inherit; color:var(--ink); }
+  /* 前回値・漸増サイン（箱なし） */
+  .prev{ display:flex; align-items:center; gap:10px; font-size:var(--fs-body); color:var(--sub); margin:10px 0 2px; }
+  .prev .pv{ flex:1; min-width:0; }
+  .prev b{ color:var(--accent); font-weight:700; font-variant-numeric:tabular-nums; }
+  .prev .pd{ font-size:var(--fs-cap); opacity:.8; }
+  .prev .copyprev{ flex:none; border:1px solid var(--line2); color:var(--accent); background:none; border-radius:999px; font-size:var(--fs-cap); padding:9px 14px; font-weight:600; }
+  .sug{ font-size:var(--fs-body); color:var(--accent); border-left:2px solid var(--accent); padding:2px 0 2px 12px; margin:10px 3px 2px; line-height:1.55; font-weight:600; }
 
-  .empty{ text-align:center; color:var(--sub); padding:26px 10px; font-size:.9rem; }
+  /* 記録（数字が主役） */
+  .setrow{ display:flex; align-items:center; gap:8px; margin:12px 0; }
+  .setno{ width:22px; text-align:center; color:var(--sub); font-size:var(--fs-cap); font-weight:700; flex:none; }
+  .field{ display:flex; align-items:center; gap:5px; }
+  .field input{ width:78px; height:50px; font-size:var(--fs-num); text-align:center; border:1px solid var(--line2); border-radius:12px; background:var(--bg); color:var(--ink); font-weight:700; font-family:inherit; font-variant-numeric:tabular-nums; padding:0 4px; }
+  .field input:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(45,212,191,.22); }
+  .field .u{ font-size:var(--fs-cap); color:var(--sub); min-width:18px; }
+  .times{ color:var(--sub); font-size:var(--fs-cap); font-weight:600; }
+  .setdel{ margin-left:auto; border:none; background:none; color:rgba(255,255,255,.28); font-size:1rem; width:40px; height:40px; flex:none; }
+  .addset{ border:none; background:none; color:var(--accent); font-weight:600; font-size:var(--fs-body); padding:12px 4px 10px 30px; margin-top:0; width:100%; min-height:44px; text-align:left; }
+  .ex-note{ width:100%; font-size:var(--fs-body); padding:12px 2px 10px; border:none; border-bottom:1px solid var(--line); border-radius:0; margin-top:2px; color:var(--ink); background:none; font-family:inherit; }
+  .ex-note:focus{ outline:none; border-bottom-color:var(--accent); }
+  .ex-note::placeholder,textarea#snote::placeholder{ color:var(--sub); opacity:.6; }
+
+  .addex{ border:1px dashed var(--line2); background:none; color:var(--accent); font-weight:600; font-size:var(--fs-body); border-radius:16px; padding:15px; width:100%; margin:2px 0 16px; min-height:50px; }
+  .snote-wrap{ margin:4px 0 20px; }
+  .snote-wrap label{ font-size:var(--fs-cap); color:var(--sub); font-weight:600; display:block; margin-bottom:7px; }
+  textarea#snote{ width:100%; min-height:72px; font-size:var(--fs-body); padding:12px; border:1px solid var(--line); border-radius:12px; resize:vertical; font-family:inherit; color:var(--ink); background:var(--card); }
+  textarea#snote:focus{ outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(45,212,191,.22); }
+
+  .empty{ text-align:center; color:var(--sub); padding:34px 10px; font-size:var(--fs-body); line-height:1.9; }
 
   /* footer */
-  footer{ position:fixed; left:0; right:0; bottom:0; background:rgba(255,255,255,.96); backdrop-filter:blur(8px); border-top:1px solid var(--line); padding:10px 0 calc(10px + env(safe-area-inset-bottom)); }
-  footer .wrap{ display:flex; gap:9px; }
-  .btn{ flex:1; border:none; border-radius:11px; padding:14px 8px; font-size:1rem; font-weight:700; }
-  .btn.copy{ background:var(--accent); color:#fff; flex:1.6; }
-  .btn.copy:active{ background:var(--accent-dark); }
-  .btn.hist{ background:var(--soft); color:var(--accent); }
+  footer{ position:fixed; left:0; right:0; bottom:0; background:rgba(13,17,23,.88); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border-top:1px solid var(--line); padding:10px 0 calc(10px + env(safe-area-inset-bottom)); z-index:40; }
+  footer .wrap{ display:flex; gap:10px; }
+  .btn{ flex:1; border:none; border-radius:13px; padding:15px 8px; font-size:.95rem; font-weight:700; min-height:52px; }
+  .btn.copy{ background:var(--accent); color:#052e28; flex:1.6; }
+  .btn.copy:active{ opacity:.85; }
+  .btn.hist{ background:var(--card2); color:var(--ink); border:1px solid var(--line2); }
 
-  /* overlay */
-  .overlay{ position:fixed; inset:0; background:rgba(20,30,35,.5); display:none; align-items:flex-end; z-index:50; }
+  /* overlay / sheet */
+  .overlay{ position:fixed; inset:0; background:rgba(0,0,0,.62); display:none; align-items:flex-end; z-index:50; }
   .overlay.on{ display:flex; }
-  .sheet{ background:var(--bg); width:100%; max-height:82vh; overflow:auto; border-radius:18px 18px 0 0; padding:16px 14px calc(20px + env(safe-area-inset-bottom)); }
-  .sheet h2{ font-size:1.05rem; margin:0 0 12px; display:flex; align-items:center; }
-  .sheet h2 .x{ margin-left:auto; border:none; background:#e6eaec; border-radius:999px; width:30px; height:30px; font-size:1rem; color:var(--sub); }
-  .chipgrid{ display:flex; flex-wrap:wrap; gap:8px; }
-  .chip{ border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:999px; padding:10px 14px; font-size:.9rem; font-weight:600; }
-  .chip:active{ background:var(--accent); color:#fff; border-color:var(--accent); }
-  .chip.free{ border-style:dashed; color:var(--accent); }
-  .grouplabel{ font-size:.75rem; color:var(--sub); font-weight:700; margin:14px 0 7px; }
+  .sheet{ background:#141b23; width:100%; max-height:82vh; overflow:auto; border-radius:20px 20px 0 0; border-top:1px solid var(--line2); padding:12px 16px calc(24px + env(safe-area-inset-bottom)); }
+  .sheet::before{ content:''; display:block; width:36px; height:4px; border-radius:2px; background:rgba(255,255,255,.18); margin:0 auto 16px; }
+  .overlay.on .sheet{ animation:sheetUp .22s ease-out; }
+  @keyframes sheetUp{ from{ transform:translateY(28px); opacity:.5; } to{ transform:none; opacity:1; } }
+  .sheet h2{ font-size:1.05rem; margin:0 0 14px; display:flex; align-items:center; font-weight:700; }
+  .sheet h2 .x{ margin-left:auto; border:none; background:rgba(255,255,255,.07); border-radius:999px; width:38px; height:38px; font-size:.95rem; color:var(--sub); }
+  .chipgrid{ display:flex; flex-wrap:wrap; gap:9px; }
+  .chip{ border:1px solid var(--line2); background:var(--card2); color:var(--ink); border-radius:999px; padding:12px 16px; font-size:var(--fs-body); font-weight:600; min-height:44px; }
+  .chip:active{ background:var(--accent-dim); color:var(--accent); border-color:var(--accent); opacity:1; }
+  .chip.free{ border-style:dashed; background:none; color:var(--accent); }
+  .grouplabel{ font-size:var(--fs-cap); color:var(--sub); font-weight:700; margin:18px 2px 10px; letter-spacing:.05em; }
 
-  .histitem{ background:#fff; border:1px solid var(--line); border-radius:11px; padding:11px 13px; margin-bottom:9px; display:flex; align-items:center; gap:10px; }
-  .histitem .hd{ font-weight:700; }
-  .histitem .hsub{ font-size:.8rem; color:var(--sub); }
-  .histitem .go{ margin-left:auto; border:1px solid var(--accent); color:var(--accent); background:#fff; border-radius:999px; padding:6px 12px; font-size:.8rem; font-weight:700; }
+  .histitem{ display:flex; align-items:center; gap:10px; padding:13px 2px; border-bottom:1px solid var(--line); }
+  .histitem .hd{ font-weight:700; font-size:var(--fs-body); font-variant-numeric:tabular-nums; }
+  .histitem .hsub{ font-size:var(--fs-cap); color:var(--sub); margin-top:2px; }
+  .histitem .go{ margin-left:auto; border:1px solid var(--line2); color:var(--accent); background:none; border-radius:999px; padding:10px 18px; font-size:var(--fs-cap); font-weight:700; flex:none; }
 
-  textarea#fallback{ width:100%; min-height:220px; font-size:.85rem; padding:11px; border:1px solid var(--line); border-radius:10px; font-family:ui-monospace,Menlo,monospace; }
+  textarea#fallback{ width:100%; min-height:220px; font-size:.8rem; padding:12px; border:1px solid var(--line2); border-radius:12px; font-family:ui-monospace,Menlo,monospace; background:var(--bg); color:var(--ink); }
 
-  .toast{ position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:#fff; padding:11px 18px; border-radius:999px; font-size:.88rem; font-weight:600; opacity:0; transition:.25s; z-index:80; pointer-events:none; white-space:nowrap; }
+  .toast{ position:fixed; left:50%; bottom:calc(92px + env(safe-area-inset-bottom)); transform:translateX(-50%) translateY(20px); background:var(--ink); color:#0d1117; padding:12px 20px; border-radius:999px; font-size:var(--fs-body); font-weight:700; opacity:0; transition:.25s; z-index:80; pointer-events:none; white-space:nowrap; box-shadow:0 6px 24px rgba(0,0,0,.45); }
   .toast.on{ opacity:1; transform:translateX(-50%) translateY(0); }
 
-  /* ==== メニュー指示（プランA拡張）==== */
-  .banner{ background:var(--card); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:10px; padding:9px 12px; margin:0 0 12px; font-size:.85rem; }
-  .banner .t{ font-weight:700; }
-  .banner .sub{ color:var(--sub); display:block; margin-top:3px; font-size:.8rem; }
-  .acc{ background:var(--card); border:1px solid var(--line); border-radius:11px; margin:0 0 12px; overflow:hidden; }
-  .acc>summary{ list-style:none; cursor:pointer; padding:11px 13px; font-weight:700; font-size:.88rem; color:var(--accent); }
-  .acc>summary::-webkit-details-marker{ display:none; }
-  .acc>summary::before{ content:'▸ '; }
-  .acc[open]>summary::before{ content:'▾ '; }
-  .acc .body{ padding:0 14px 12px; font-size:.83rem; color:var(--ink); }
-  .acc .body ul{ margin:2px 0; padding-left:1.1em; }
-  .acc .body li{ margin:3px 0; }
-  .ex-order{ display:inline-flex; align-items:center; justify-content:center; min-width:22px; height:22px; border-radius:6px; background:var(--accent); color:#fff; font-size:.8rem; font-weight:700; flex:none; }
-  .ex-name small{ font-weight:500; color:var(--sub); font-size:.78rem; margin-left:5px; }
-  .ex-target{ font-size:.78rem; color:var(--accent-dark); background:var(--soft); border-radius:6px; padding:2px 9px; display:inline-block; margin:2px 0 6px; font-weight:600; }
-  .cue-line{ font-size:.86rem; color:var(--ink); font-weight:600; margin:0 0 5px; line-height:1.5; }
-  details.cue{ margin:0 0 8px; }
-  details.cue>summary{ list-style:none; cursor:pointer; color:var(--accent); font-size:.82rem; font-weight:700; padding:2px 0; }
-  details.cue>summary::-webkit-details-marker{ display:none; }
-  details.cue>summary::before{ content:'▸ コツ・代替・漸増'; }
-  details.cue[open]>summary::before{ content:'▾ コツ・代替・漸増'; }
-  details.cue>summary span{ display:none; }
-  .cue-body{ background:#fbfdfd; border:1px dashed var(--line); border-radius:9px; padding:8px 11px; margin:5px 0 0; font-size:.83rem; }
-  .cue-body ul{ margin:0; padding-left:1.05em; }
-  .cue-body li{ margin:2px 0; }
-  .cue-body .alt,.cue-body .prog{ color:var(--sub); margin-top:6px; }
-  .cue-body .alt b,.cue-body .prog b{ color:var(--ink); font-weight:600; }
-  .sug{ font-size:.8rem; color:#1c6f48; background:#e8f6ee; border:1px solid #bfe6cf; border-radius:8px; padding:6px 10px; margin:4px 0 8px; font-weight:600; line-height:1.45; }
+  /* 信頼度ドット（目安重量の確度：緑=確定/黄=推定/赤=要実測） */
+  .dot{ display:inline-block; width:7px; height:7px; border-radius:50%; margin-left:6px; vertical-align:1px; }
+  .dot.g{ background:var(--ok); }
+  .dot.y{ background:var(--warn); }
+  .dot.r{ background:var(--ng); }
+
+  @media (max-width:359px){
+    .field input{ width:64px; font-size:1.15rem; }
+  }
 </style>
 </head>
 <body>
@@ -123,7 +161,7 @@
 <header>
   <div class="wrap">
     <div class="hrow">
-      <h1>🏋️ ジム記録</h1>
+      <h1>ジム記録</h1>
       <div class="datenav">
         <button id="prevDay" aria-label="前日">‹</button>
         <input type="date" id="date">
@@ -199,39 +237,39 @@ const DAYS = {
 /* ===== 種目メタ（指示情報・weekly_workout_plan.html / fitness_plan.md が一次ソース） =====
    表示専用。保存構造(name/sets/note)には入れず、種目名で引く。 */
 const META = {
-  'チェストプレス':{ gear:'マシン', muscle:'大胸筋', weight:'25kg', wlabel:'🟢', setrep:'3〜4×10-12', rest:'2〜3分',
+  'チェストプレス':{ gear:'マシン', muscle:'大胸筋', weight:'25kg', wlabel:'<span class="dot g"></span>', setrep:'3〜4×10-12', rest:'2〜3分',
     cues:['肩甲骨を寄せて胸を張る','前ももでなく胸で押す'], alt:'ダンベル/スミス・ベンチプレス', prog:'全セット上限をRIR1-2で挙げきれたら+2.5kg' },
-  'ショルダープレス':{ gear:'マシン', muscle:'三角筋', weight:'今日実測', wlabel:'🔴', setrep:'3×10-12', rest:'2〜3分',
+  'ショルダープレス':{ gear:'マシン', muscle:'三角筋', weight:'今日実測', wlabel:'<span class="dot r"></span>', setrep:'3×10-12', rest:'2〜3分',
     cues:['耳の横で真上に押す','肩をすくめない'], alt:'ダンベル・ショルダープレス', prog:'挙げきれたら+2.5kg' },
-  'サイドレイズ':{ gear:'ダンベル', muscle:'三角筋中部', weight:'1.5〜3kg', wlabel:'🟡', setrep:'3×12-15', rest:'60〜90秒',
+  'サイドレイズ':{ gear:'ダンベル', muscle:'三角筋中部', weight:'1.5〜3kg', wlabel:'<span class="dot y"></span>', setrep:'3×12-15', rest:'60〜90秒',
     cues:['反動を使わない','肩に丸みを付けて華奢見え','逆三角でウエスト細見え'], prog:'15回×3が楽になったら+1〜2kg' },
-  'トライセッププレスダウン':{ gear:'ケーブル', muscle:'上腕三頭筋', weight:'軽めから実測', wlabel:'🔴', setrep:'3×12-15', rest:'60〜90秒',
+  'トライセッププレスダウン':{ gear:'ケーブル', muscle:'上腕三頭筋', weight:'軽めから実測', wlabel:'<span class="dot r"></span>', setrep:'3×12-15', rest:'60〜90秒',
     cues:['肘を体側に固定','肘から先だけ動かす'], alt:'ダンベル・キックバック/フレンチプレス' },
-  'アブドミナル':{ gear:'マシン', muscle:'腹直筋', weight:'25kg', wlabel:'🟢', setrep:'2〜3×15', rest:'60〜90秒',
+  'アブドミナル':{ gear:'マシン', muscle:'腹直筋', weight:'25kg', wlabel:'<span class="dot g"></span>', setrep:'2〜3×15', rest:'60〜90秒',
     cues:['腰を反らせず腹で持ち上げる','息を吐きながら丸める'] },
-  'ラットプルダウン':{ gear:'マシン', muscle:'広背筋（広がり）', weight:'17.5〜20kg', wlabel:'🟡', setrep:'3〜4×10-12', rest:'60〜75秒',
+  'ラットプルダウン':{ gear:'マシン', muscle:'広背筋（広がり）', weight:'17.5〜20kg', wlabel:'<span class="dot y"></span>', setrep:'3〜4×10-12', rest:'60〜75秒',
     cues:['脇の下〜背中の外側を意識・腕に逃がさない','肩甲骨を先に下げてから引く','胸の上部まで引く（可動域を深く）','下ろし2〜3秒＋タメ1秒'], prog:'背中に効く感覚とフルレンジが安定してから漸増（今はフォーム習得中）' },
-  'ラットプルダウン(ワイド)':{ gear:'マシン', muscle:'広背筋（外側・広がり）', weight:'25kg', wlabel:'🟢', setrep:'3×10-12', rest:'60〜75秒',
+  'ラットプルダウン(ワイド)':{ gear:'マシン', muscle:'広背筋（外側・広がり）', weight:'25kg', wlabel:'<span class="dot g"></span>', setrep:'3×10-12', rest:'60〜75秒',
     cues:['ワイドグリップで背中の外側に効かせる','肩甲骨先行・腕で引かない'] },
-  'ワンハンド・ダンベルロー':{ gear:'ダンベル＋ベンチ', muscle:'広背筋・僧帽筋（厚み）', weight:'片手4kg', wlabel:'🟡', setrep:'3〜4×10-12', rest:'60〜75秒',
+  'ワンハンド・ダンベルロー':{ gear:'ダンベル＋ベンチ', muscle:'広背筋・僧帽筋（厚み）', weight:'片手4kg', wlabel:'<span class="dot y"></span>', setrep:'3〜4×10-12', rest:'60〜75秒',
     cues:['サムレスで握る','肘で引く・肩甲骨を先に動かす','みぞおち脇まで引く','腕に効くなら背中に入る重さへ調整'], alt:'スミス・ベントオーバーロー（シーテッドロー代替）' },
-  'リアレイズ':{ gear:'ダンベル/ケーブル', muscle:'後部三角筋', weight:'片手4kg', wlabel:'🟢', setrep:'2〜3×15', rest:'60〜90秒',
+  'リアレイズ':{ gear:'ダンベル/ケーブル', muscle:'後部三角筋', weight:'片手4kg', wlabel:'<span class="dot g"></span>', setrep:'2〜3×15', rest:'60〜90秒',
     cues:['反動なし・上で1秒','後肩＝猫背・姿勢に効く'] },
-  'ダンベルカール':{ gear:'ダンベル', muscle:'上腕二頭筋', weight:'片手4kg', wlabel:'🟢', setrep:'3×12-15', rest:'60〜90秒',
+  'ダンベルカール':{ gear:'ダンベル', muscle:'上腕二頭筋', weight:'片手4kg', wlabel:'<span class="dot g"></span>', setrep:'3×12-15', rest:'60〜90秒',
     cues:['strict（反動を使わない）','腕は弱点＝丁寧に'], alt:'プリチャーカール台も可', prog:'楽になったら+1〜2kg' },
-  'ヒップアブダクション':{ gear:'アウターサイ・マシン', muscle:'中臀筋', weight:'W-up18kg／締め23kg＋トップ27kg', wlabel:'🟡', setrep:'2〜3×15-20', rest:'60〜90秒（短め）',
+  'ヒップアブダクション':{ gear:'アウターサイ・マシン', muscle:'中臀筋', weight:'W-up18kg／締め23kg＋トップ27kg', wlabel:'<span class="dot y"></span>', setrep:'2〜3×15-20', rest:'60〜90秒（短め）',
     cues:['綺麗に出せる重さで','X脚の中臀筋を強化','締め27kgはレップを3→6→8で橋渡し'] },
-  'ヒップスラスト':{ gear:'スミス＋ベンチ', muscle:'大殿筋', weight:'両側5kgずつ→次回両側7.5kgずつ', wlabel:'🟢', setrep:'3〜4×8-12', rest:'2〜3分',
+  'ヒップスラスト':{ gear:'スミス＋ベンチ', muscle:'大殿筋', weight:'両側5kgずつ→次回両側7.5kgずつ', wlabel:'<span class="dot g"></span>', setrep:'3〜4×8-12', rest:'2〜3分',
     cues:['フルROMで下げる','頂点で骨盤を後傾させてお尻をロック','腰を反らせない（反り腰の矯正にもなる）','反動を使わない'], prog:'8-12が安定したら両側+2.5kgずつ' },
-  'ルーマニアンDL':{ gear:'ダンベル/スミス', muscle:'ハムストリング・大殿筋', weight:'空バー維持', wlabel:'🟡', setrep:'3×8-10', rest:'2〜3分',
+  'ルーマニアンDL':{ gear:'ダンベル/スミス', muscle:'ハムストリング・大殿筋', weight:'空バー維持', wlabel:'<span class="dot y"></span>', setrep:'3×8-10', rest:'2〜3分',
     cues:['尻を後ろへ引く（ヒンジ）','膝は軽く曲げて固定・伸ばしきらない','背中はまっすぐ','もも裏が伸びて背が丸まる直前で止める'], prog:'フォームが安定するまで重量は増やさない' },
-  'レッグプレス':{ gear:'マシン', muscle:'大殿筋・ハムストリング', weight:'100〜105kg', wlabel:'🟢', setrep:'3〜4×10-12', rest:'2〜3分',
+  'レッグプレス':{ gear:'マシン', muscle:'大殿筋・ハムストリング', weight:'100〜105kg', wlabel:'<span class="dot g"></span>', setrep:'3〜4×10-12', rest:'2〜3分',
     cues:['足は高め・やや広め・つま先やや外','膝はロックしない','深く下ろしすぎない'], prog:'全セット挙げきれたら+5kg' },
-  'レッグカール':{ gear:'マシン', muscle:'ハムストリング', weight:'今日実測', wlabel:'🔴', setrep:'3×12', rest:'60〜90秒',
+  'レッグカール':{ gear:'マシン', muscle:'ハムストリング', weight:'今日実測', wlabel:'<span class="dot r"></span>', setrep:'3×12', rest:'60〜90秒',
     cues:['もも裏の単関節','反動を使わず戻しもゆっくり'], alt:'ダンベル・ライイングレッグカール' },
-  'ケーブルキックバック':{ gear:'ケーブル', muscle:'大殿筋・中臀筋', weight:'軽め', wlabel:'🟡', setrep:'3×15-20', rest:'60〜90秒',
+  'ケーブルキックバック':{ gear:'ケーブル', muscle:'大殿筋・中臀筋', weight:'軽め', wlabel:'<span class="dot y"></span>', setrep:'3×15-20', rest:'60〜90秒',
     cues:['お尻を締めて後ろへ蹴る','腰を反らせない'] },
-  'プランク':{ gear:'自重', muscle:'体幹', weight:'自重', wlabel:'🟡', setrep:'3セット（秒で記録）', rest:'60秒',
+  'プランク':{ gear:'自重', muscle:'体幹', weight:'自重', wlabel:'<span class="dot y"></span>', setrep:'3セット（秒で記録）', rest:'60秒',
     cues:['お尻を締めて骨盤を後傾','腰を反らせない'] }
 };
 
@@ -303,7 +341,7 @@ function render(){
   if(!cur.exercises.length){
     const isRest = !((DAYS[cur.day]?.ex)||[]).length;
     box.innerHTML = isRest
-      ? `<div class="empty">🛌 今日は休館・完全休養日。<br>回復＝筋肉が育つ日。睡眠7〜9時間を死守。</div>`
+      ? `<div class="empty">今日は休館・完全休養日。<br>回復＝筋肉が育つ日。睡眠7〜9時間を死守。</div>`
       : `<div class="empty">種目がありません。<br>「＋ 種目を追加」か、上のメニューを選んでください。</div>`;
     return;
   }
@@ -315,7 +353,7 @@ function renderTop(){
   const d = DAYS[cur.day] || {};
   const isRest = !((d.ex)||[]).length;
   document.getElementById('banner').innerHTML = d.target
-    ? `<div class="banner"><span class="t">🎯 今日の狙い：</span>${escHtml(d.target)}${d.session?`<span class="sub">${escHtml(d.session)}</span>`:''}</div>`
+    ? `<div class="banner"><span class="t">今日の狙い</span>${escHtml(d.target)}${d.session?`<span class="sub">${escHtml(d.session)}</span>`:''}</div>`
     : '';
   const wc = document.getElementById('warmup');
   const cc = document.getElementById('cooldown');
@@ -355,13 +393,13 @@ function exCard(ex,i){
 
   /* 指示行（目標 set×rep ・ 目安重量 ・ レスト） */
   const gear = meta && meta.gear ? `<small>${escHtml(meta.gear)}</small>` : '';
-  const target = meta && meta.muscle ? `<div class="ex-target">🎯 ${escHtml(meta.muscle)}</div>` : '';
   let cueLine = '';
   if(meta){
     const bits = [];
+    if(meta.muscle) bits.push(escHtml(meta.muscle));
     if(meta.setrep) bits.push(`目標 ${escHtml(meta.setrep)}`);
     if(meta.weight) bits.push(`目安 ${escHtml(meta.weight)}${meta.wlabel||''}`);
-    if(meta.rest)   bits.push(`⏱ ${escHtml(meta.rest)}`);
+    if(meta.rest)   bits.push(`レスト ${escHtml(meta.rest)}`);
     if(bits.length) cueLine = `<div class="cue-line">${bits.join(' ・ ')}</div>`;
   }
 
@@ -378,7 +416,7 @@ function exCard(ex,i){
   let prevHtml = '';
   if(p){
     const txt = p.sets.map(fmtSet).join(' / ');
-    prevHtml = `<div class="prev"><button class="copyprev" data-copyprev="${i}">前回を入れる</button>前回 <b>${txt}</b> <span style="opacity:.7">(${p.date.slice(5)})</span></div>`;
+    prevHtml = `<div class="prev"><span class="pv">前回 <b>${txt}</b> <span class="pd">${p.date.slice(5)}</span></span><button class="copyprev" data-copyprev="${i}">前回を入れる</button></div>`;
     if(readyToProgress(ex.name, p)){
       const dumb = meta && /ダンベル/.test(meta.gear||'');
       prevHtml += `<div class="sug">✓ 前回、全セット上限レップ達成。今日は一段上げてみる合図（目安 ${dumb?'+1〜2kg':'+2.5kg'}）</div>`;
@@ -398,9 +436,8 @@ function exCard(ex,i){
       <div class="ex-head">
         <span class="ex-order">${i+1}</span>
         <span class="ex-name">${escHtml(ex.name)}${gear}</span>
-        <button class="ex-del" data-delex="${i}" aria-label="種目を削除">🗑</button>
+        <button class="ex-del" data-delex="${i}" aria-label="種目を削除">削除</button>
       </div>
-      ${target}
       ${cueLine}
       ${cueDet}
       ${prevHtml}
