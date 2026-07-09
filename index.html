@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="ジム記録">
+<meta name="theme-color" content="#0f6b6b">
+<title>ジム記録</title>
+<style>
+  :root{
+    --ink:#1f2933; --sub:#5c6b7a; --line:#e2e6ea; --bg:#f4f6f7; --card:#fff;
+    --accent:#0f6b6b; --accent-dark:#0b5050; --hard:#b3402e; --soft:#eef4f4; --gold:#b8863b;
+  }
+  *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ margin:0; padding:0; }
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif;
+    color:var(--ink); background:var(--bg); line-height:1.5;
+    padding:0 0 108px; -webkit-text-size-adjust:100%;
+  }
+  .wrap{ max-width:640px; margin:0 auto; padding:0 14px; }
+
+  /* header */
+  header{ background:var(--accent); color:#fff; padding:14px 0 12px; margin-bottom:14px; }
+  header .wrap{ display:flex; flex-direction:column; gap:10px; }
+  .hrow{ display:flex; align-items:center; gap:8px; }
+  h1{ font-size:1.15rem; margin:0; font-weight:700; letter-spacing:.02em; }
+  .datenav{ display:flex; align-items:center; gap:6px; margin-left:auto; }
+  .datenav button{ width:34px; height:34px; border-radius:8px; border:none; background:rgba(255,255,255,.18); color:#fff; font-size:1.2rem; line-height:1; }
+  input[type=date]{ font-size:.95rem; border:none; border-radius:8px; padding:7px 8px; background:rgba(255,255,255,.95); color:var(--ink); }
+  select#menu{ width:100%; font-size:1rem; padding:9px 10px; border-radius:9px; border:none; background:rgba(255,255,255,.95); color:var(--ink); font-weight:600; }
+
+  /* exercise cards */
+  .ex{ background:var(--card); border:1px solid var(--line); border-radius:13px; padding:12px 13px 10px; margin:0 0 12px; }
+  .ex-head{ display:flex; align-items:center; gap:8px; margin-bottom:2px; }
+  .ex-name{ font-weight:700; font-size:1.05rem; flex:1; }
+  .ex-del{ border:none; background:none; color:#c2ccd4; font-size:1.15rem; padding:4px 6px; }
+  .prev{ font-size:.78rem; color:var(--sub); background:var(--soft); border-radius:7px; padding:5px 8px; margin:4px 0 8px; }
+  .prev b{ color:var(--accent); font-weight:700; }
+  .prev .copyprev{ float:right; border:1px solid var(--accent); color:var(--accent); background:#fff; border-radius:999px; font-size:.72rem; padding:2px 9px; font-weight:600; }
+
+  .setrow{ display:flex; align-items:center; gap:7px; margin:6px 0; }
+  .setno{ width:22px; text-align:center; color:var(--sub); font-size:.8rem; font-weight:700; }
+  .field{ display:flex; align-items:center; gap:3px; }
+  .field input{ width:66px; font-size:1.05rem; text-align:center; padding:9px 4px; border:1px solid var(--line); border-radius:9px; background:#fff; color:var(--ink); font-weight:600; }
+  .field .u{ font-size:.8rem; color:var(--sub); min-width:18px; }
+  .times{ color:var(--sub); font-weight:700; }
+  .setdel{ margin-left:auto; border:none; background:none; color:#c2ccd4; font-size:1.05rem; padding:6px; }
+  .ex-note{ width:100%; font-size:.85rem; padding:7px 9px; border:1px dashed var(--line); border-radius:8px; margin-top:6px; color:var(--ink); background:#fcfdfd; }
+  .addset{ border:none; background:var(--soft); color:var(--accent); font-weight:700; font-size:.85rem; border-radius:8px; padding:8px 10px; margin-top:8px; width:100%; }
+
+  .addex{ border:2px dashed var(--accent); background:#fff; color:var(--accent); font-weight:700; font-size:.95rem; border-radius:12px; padding:13px; width:100%; margin:2px 0 14px; }
+  .snote-wrap{ margin:0 0 18px; }
+  .snote-wrap label{ font-size:.82rem; color:var(--sub); font-weight:600; display:block; margin-bottom:5px; }
+  textarea#snote{ width:100%; min-height:64px; font-size:.9rem; padding:10px; border:1px solid var(--line); border-radius:10px; resize:vertical; font-family:inherit; color:var(--ink); }
+
+  .empty{ text-align:center; color:var(--sub); padding:26px 10px; font-size:.9rem; }
+
+  /* footer */
+  footer{ position:fixed; left:0; right:0; bottom:0; background:rgba(255,255,255,.96); backdrop-filter:blur(8px); border-top:1px solid var(--line); padding:10px 0 calc(10px + env(safe-area-inset-bottom)); }
+  footer .wrap{ display:flex; gap:9px; }
+  .btn{ flex:1; border:none; border-radius:11px; padding:14px 8px; font-size:1rem; font-weight:700; }
+  .btn.copy{ background:var(--accent); color:#fff; flex:1.6; }
+  .btn.copy:active{ background:var(--accent-dark); }
+  .btn.hist{ background:var(--soft); color:var(--accent); }
+
+  /* overlay */
+  .overlay{ position:fixed; inset:0; background:rgba(20,30,35,.5); display:none; align-items:flex-end; z-index:50; }
+  .overlay.on{ display:flex; }
+  .sheet{ background:var(--bg); width:100%; max-height:82vh; overflow:auto; border-radius:18px 18px 0 0; padding:16px 14px calc(20px + env(safe-area-inset-bottom)); }
+  .sheet h2{ font-size:1.05rem; margin:0 0 12px; display:flex; align-items:center; }
+  .sheet h2 .x{ margin-left:auto; border:none; background:#e6eaec; border-radius:999px; width:30px; height:30px; font-size:1rem; color:var(--sub); }
+  .chipgrid{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chip{ border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:999px; padding:10px 14px; font-size:.9rem; font-weight:600; }
+  .chip:active{ background:var(--accent); color:#fff; border-color:var(--accent); }
+  .chip.free{ border-style:dashed; color:var(--accent); }
+  .grouplabel{ font-size:.75rem; color:var(--sub); font-weight:700; margin:14px 0 7px; }
+
+  .histitem{ background:#fff; border:1px solid var(--line); border-radius:11px; padding:11px 13px; margin-bottom:9px; display:flex; align-items:center; gap:10px; }
+  .histitem .hd{ font-weight:700; }
+  .histitem .hsub{ font-size:.8rem; color:var(--sub); }
+  .histitem .go{ margin-left:auto; border:1px solid var(--accent); color:var(--accent); background:#fff; border-radius:999px; padding:6px 12px; font-size:.8rem; font-weight:700; }
+
+  textarea#fallback{ width:100%; min-height:220px; font-size:.85rem; padding:11px; border:1px solid var(--line); border-radius:10px; font-family:ui-monospace,Menlo,monospace; }
+
+  .toast{ position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:#fff; padding:11px 18px; border-radius:999px; font-size:.88rem; font-weight:600; opacity:0; transition:.25s; z-index:80; pointer-events:none; white-space:nowrap; }
+  .toast.on{ opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="hrow">
+      <h1>🏋️ ジム記録</h1>
+      <div class="datenav">
+        <button id="prevDay" aria-label="前日">‹</button>
+        <input type="date" id="date">
+        <button id="nextDay" aria-label="翌日">›</button>
+      </div>
+    </div>
+    <select id="menu"></select>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="exercises"></div>
+  <button class="addex" id="addEx">＋ 種目を追加</button>
+
+  <div class="snote-wrap">
+    <label for="snote">今日のメモ（体調・気づき・任意）</label>
+    <textarea id="snote" placeholder="例：背中に効く感覚が出た／膝は痛みなし"></textarea>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <button class="btn hist" id="openHist">履歴</button>
+    <button class="btn copy" id="copyBtn">Claudeにコピー</button>
+  </div>
+</footer>
+
+<!-- 種目追加シート -->
+<div class="overlay" id="addSheet">
+  <div class="sheet">
+    <h2>種目を追加 <button class="x" data-close>✕</button></h2>
+    <div id="addChips"></div>
+  </div>
+</div>
+
+<!-- 履歴シート -->
+<div class="overlay" id="histSheet">
+  <div class="sheet">
+    <h2>これまでの記録 <button class="x" data-close>✕</button></h2>
+    <div id="histList"></div>
+  </div>
+</div>
+
+<!-- コピー用フォールバック -->
+<div class="overlay" id="fbSheet">
+  <div class="sheet">
+    <h2>コピー <button class="x" data-close>✕</button></h2>
+    <p style="font-size:.82rem;color:var(--sub);margin:0 0 8px">下のテキストを長押し→「すべてを選択」→コピーして、Claudeに貼り付けてください。</p>
+    <textarea id="fallback" readonly></textarea>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ===== あなたの週割り・種目（fitness_plan.md / weekly_workout_plan.html 準拠） ===== */
+const DOW = ['日','月','火','水','木','金','土'];
+const DAYS = {
+  '月':{ label:'月・上半身プッシュ', ex:['チェストプレス','ショルダープレス','サイドレイズ','トライセッププレスダウン','アブドミナル'] },
+  '火':{ label:'火・背中プル#1 広がり＋二頭', ex:['ラットプルダウン','ワンハンド・ダンベルロー','リアレイズ','ダンベルカール','ヒップアブダクション'] },
+  '水':{ label:'水・下半身A お尻/もも裏（重）', ex:['ヒップスラスト','ルーマニアンDL','レッグプレス','ヒップアブダクション'] },
+  '木':{ label:'木・背中プル#2 厚み＋後肩', ex:['ワンハンド・ダンベルロー','ラットプルダウン(ワイド)','リアレイズ','サイドレイズ','アブドミナル'] },
+  '金':{ label:'金・休館（完全休養）', ex:[] },
+  '土':{ label:'土・下半身B お尻（重）＋体幹', ex:['ヒップスラスト','レッグカール','ケーブルキックバック','プランク','アブドミナル'] },
+  '日':{ label:'日・予備/回復（抜くならここ）', ex:['ダンベルカール','トライセッププレスダウン','プランク'] }
+};
+/* 初期重量ヒント（logの実測が一次ソース。前回値が無い時のプレースホルダ） */
+const HINTS = {
+  'チェストプレス':'25','ショルダープレス':'実測','サイドレイズ':'2〜3','トライセッププレスダウン':'軽め','アブドミナル':'25',
+  'ラットプルダウン':'17.5〜20','ラットプルダウン(ワイド)':'25','ワンハンド・ダンベルロー':'4〜6','リアレイズ':'4','ダンベルカール':'4',
+  'ヒップアブダクション':'W18/締23','ヒップスラスト':'空バー+両側5','ルーマニアンDL':'空バー','レッグプレス':'100〜105','レッグカール':'実測',
+  'ケーブルキックバック':'軽め','プランク':'秒','傾斜トレッドミル':'傾斜%'
+};
+/* 追加パネルに出す種目マスター */
+const MASTER = ['チェストプレス','ショルダープレス','サイドレイズ','トライセッププレスダウン','アブドミナル',
+  'ラットプルダウン','ラットプルダウン(ワイド)','ワンハンド・ダンベルロー','リアレイズ','ダンベルカール',
+  'ヒップアブダクション','ヒップスラスト','ルーマニアンDL','レッグプレス','レッグカール','ケーブルキックバック',
+  'プランク','傾斜トレッドミル','スミス・ベントオーバーロー','プリチャーカール'];
+
+/* ===== 状態 ===== */
+const KEY = 'gymlog_sessions_v1';
+let sessions = load();
+let curDate = todayStr();
+let cur = null;
+
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
+function save(){
+  // 空セッション（種目ゼロ かつ メモ無し）は保存しない
+  const s = cur;
+  const hasData = s && (s.note.trim() || s.exercises.some(e=> e.note.trim() || e.sets.some(st=> String(st.w).trim()!=='' || String(st.r).trim()!=='')));
+  if(hasData){ sessions[s.date] = s; } else { delete sessions[s.date]; }
+  localStorage.setItem(KEY, JSON.stringify(sessions));
+}
+function todayStr(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+function dowOf(dateStr){ return DOW[new Date(dateStr+'T00:00:00').getDay()]; }
+
+function newSession(date){
+  const dow = dowOf(date);
+  const ex = (DAYS[dow]?.ex || []).map(name=>({ name, sets:[{w:'',r:''}], note:'' }));
+  return { date, day:dow, note:'', exercises:ex };
+}
+function loadSession(date){
+  curDate = date;
+  cur = sessions[date] ? JSON.parse(JSON.stringify(sessions[date])) : newSession(date);
+  document.getElementById('date').value = date;
+  document.getElementById('snote').value = cur.note;
+  renderMenu();
+  render();
+}
+
+/* 直近の同名種目の記録（前回値） */
+function prevOf(name){
+  const dates = Object.keys(sessions).filter(d=> d < curDate).sort().reverse();
+  for(const d of dates){
+    const s = sessions[d];
+    const ex = s.exercises.find(e=> e.name===name);
+    if(ex){
+      const done = ex.sets.filter(st=> String(st.w).trim()!=='' || String(st.r).trim()!=='');
+      if(done.length) return { date:d, sets:done };
+    }
+  }
+  return null;
+}
+
+/* ===== 描画 ===== */
+function renderMenu(){
+  const sel = document.getElementById('menu');
+  sel.innerHTML = Object.keys(DAYS).map(k=>`<option value="${k}">${DAYS[k].label}</option>`).join('');
+  sel.value = cur.day;
+}
+
+function render(){
+  const box = document.getElementById('exercises');
+  if(!cur.exercises.length){
+    box.innerHTML = `<div class="empty">種目がありません。<br>「＋ 種目を追加」か、上のメニューを選んでください。</div>`;
+    return;
+  }
+  box.innerHTML = cur.exercises.map((ex,i)=> exCard(ex,i)).join('');
+}
+
+function fmtSet(st){
+  const w = String(st.w).trim(), r = String(st.r).trim();
+  if(w!=='' && r!=='') return `${w}kg×${r}`;
+  if(w!=='' ) return `${w}kg`;
+  if(r!=='' ) return `${r}`;
+  return '';
+}
+function exCard(ex,i){
+  const p = prevOf(ex.name);
+  let prevHtml = '';
+  if(p){
+    const txt = p.sets.map(fmtSet).join(' / ');
+    prevHtml = `<div class="prev"><button class="copyprev" data-copyprev="${i}">前回を入れる</button>前回 <b>${txt}</b> <span style="opacity:.7">(${p.date.slice(5)})</span></div>`;
+  } else {
+    const hint = HINTS[ex.name];
+    prevHtml = hint ? `<div class="prev">目安 <b>${hint}</b></div>` : '';
+  }
+  const rows = ex.sets.map((st,j)=>`
+    <div class="setrow">
+      <span class="setno">${j+1}</span>
+      <span class="field"><input inputmode="decimal" data-f="w" data-e="${i}" data-s="${j}" value="${escAttr(st.w)}" placeholder="${HINTS[ex.name]&&!prevOf(ex.name)?'':''}"><span class="u">kg</span></span>
+      <span class="times">×</span>
+      <span class="field"><input inputmode="numeric" data-f="r" data-e="${i}" data-s="${j}" value="${escAttr(st.r)}"><span class="u">回</span></span>
+      <button class="setdel" data-delset="${i}_${j}" aria-label="このセットを削除">✕</button>
+    </div>`).join('');
+  return `
+    <div class="ex" data-ex="${i}">
+      <div class="ex-head">
+        <span class="ex-name">${escHtml(ex.name)}</span>
+        <button class="ex-del" data-delex="${i}" aria-label="種目を削除">🗑</button>
+      </div>
+      ${prevHtml}
+      ${rows}
+      <button class="addset" data-addset="${i}">＋ セットを追加</button>
+      <input class="ex-note" data-note="${i}" value="${escAttr(ex.note)}" placeholder="種目メモ（フォーム・きつさ等・任意）">
+    </div>`;
+}
+function escHtml(s){ return String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+function escAttr(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ===== コピー用テキスト（log.md 書式） ===== */
+function summarize(sets){
+  const done = sets.filter(st=> String(st.w).trim()!=='' || String(st.r).trim()!=='');
+  if(!done.length) return '';
+  const allSame = done.every(st=> String(st.w)===String(done[0].w) && String(st.r)===String(done[0].r));
+  if(allSame && done.length>1){
+    const one = fmtSet(done[0]);
+    return `${one}×${done.length}`;
+  }
+  return done.map(fmtSet).join(' / ');
+}
+function buildText(s){
+  const dow = s.day || dowOf(s.date);
+  const label = DAYS[dow]?.label || '';
+  const lines = [`### ${s.date}(${dow}) ${label}`];
+  s.exercises.forEach(ex=>{
+    const body = summarize(ex.sets);
+    if(!body && !ex.note.trim()) return;
+    let line = `- ${ex.name}` + (body? ` ${body}`:'');
+    if(ex.note.trim()) line += `（${ex.note.trim()}）`;
+    lines.push(line);
+  });
+  if(s.note.trim()) lines.push(`メモ：${s.note.trim()}`);
+  return lines.join('\n');
+}
+
+/* ===== イベント ===== */
+document.getElementById('exercises').addEventListener('input', e=>{
+  const t = e.target;
+  if(t.dataset.f){ cur.exercises[+t.dataset.e].sets[+t.dataset.s][t.dataset.f] = t.value; save(); }
+  else if(t.dataset.note!=null){ cur.exercises[+t.dataset.note].note = t.value; save(); }
+});
+document.getElementById('exercises').addEventListener('click', e=>{
+  const t = e.target.closest('button'); if(!t) return;
+  if(t.dataset.addset!=null){ cur.exercises[+t.dataset.addset].sets.push({w:'',r:''}); save(); render(); }
+  else if(t.dataset.delset!=null){ const [i,j]=t.dataset.delset.split('_').map(Number); cur.exercises[i].sets.splice(j,1); if(!cur.exercises[i].sets.length) cur.exercises[i].sets.push({w:'',r:''}); save(); render(); }
+  else if(t.dataset.delex!=null){ cur.exercises.splice(+t.dataset.delex,1); save(); render(); }
+  else if(t.dataset.copyprev!=null){
+    const ex = cur.exercises[+t.dataset.copyprev];
+    const p = prevOf(ex.name);
+    if(p){ ex.sets = p.sets.map(st=>({ w:st.w, r:st.r })); save(); render(); toast('前回の重量を入れました'); }
+  }
+});
+
+document.getElementById('snote').addEventListener('input', e=>{ cur.note = e.target.value; save(); });
+
+document.getElementById('date').addEventListener('change', e=>{ save(); loadSession(e.target.value); });
+document.getElementById('prevDay').addEventListener('click', ()=> shiftDay(-1));
+document.getElementById('nextDay').addEventListener('click', ()=> shiftDay(1));
+function shiftDay(n){ save(); const d=new Date(curDate+'T00:00:00'); d.setDate(d.getDate()+n); loadSession(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`); }
+
+document.getElementById('menu').addEventListener('change', e=>{
+  const dow = e.target.value; cur.day = dow;
+  const preset = DAYS[dow].ex;
+  const existing = new Set(cur.exercises.map(x=>x.name));
+  const toAdd = preset.filter(n=> !existing.has(n));
+  if(toAdd.length){
+    toAdd.forEach(name=> cur.exercises.push({ name, sets:[{w:'',r:''}], note:'' }));
+    toast(`${DAYS[dow].label.split('・')[0]}の種目を追加`);
+  }
+  save(); render();
+});
+
+/* 種目追加シート */
+const addSheet = document.getElementById('addSheet');
+document.getElementById('addEx').addEventListener('click', ()=>{
+  const box = document.getElementById('addChips');
+  const dow = cur.day;
+  const todayEx = DAYS[dow]?.ex || [];
+  const others = MASTER.filter(n=> !todayEx.includes(n));
+  box.innerHTML =
+    (todayEx.length? `<div class="grouplabel">${DAYS[dow].label} の種目</div><div class="chipgrid">${todayEx.map(chip).join('')}</div>`:'') +
+    `<div class="grouplabel">その他の種目</div><div class="chipgrid">${others.map(chip).join('')}<button class="chip free" data-free>＋ 自由入力</button></div>`;
+  addSheet.classList.add('on');
+});
+function chip(n){ return `<button class="chip" data-add="${escAttr(n)}">${escHtml(n)}</button>`; }
+document.getElementById('addChips').addEventListener('click', e=>{
+  const t = e.target.closest('button'); if(!t) return;
+  let name = t.dataset.add;
+  if(t.dataset.free!=null){ name = (prompt('種目名を入力')||'').trim(); if(!name) return; }
+  cur.exercises.push({ name, sets:[{w:'',r:''}], note:'' });
+  save(); render(); addSheet.classList.remove('on');
+  window.scrollTo({ top:document.body.scrollHeight, behavior:'smooth' });
+});
+
+/* 履歴シート */
+document.getElementById('openHist').addEventListener('click', ()=>{
+  const list = document.getElementById('histList');
+  const dates = Object.keys(sessions).sort().reverse();
+  if(!dates.length){ list.innerHTML = `<div class="empty">まだ記録がありません。</div>`; }
+  else {
+    list.innerHTML = dates.map(d=>{
+      const s = sessions[d];
+      const n = s.exercises.filter(e=> e.sets.some(st=> String(st.w).trim()!=='' || String(st.r).trim()!=='')).length;
+      const label = DAYS[s.day]?.label || '';
+      return `<div class="histitem"><div><div class="hd">${d}（${s.day}）</div><div class="hsub">${label.split('・').slice(1).join('・')||'—'}・${n}種目</div></div><button class="go" data-go="${d}">開く</button></div>`;
+    }).join('');
+  }
+  document.getElementById('histSheet').classList.add('on');
+});
+document.getElementById('histList').addEventListener('click', e=>{
+  const t = e.target.closest('button[data-go]'); if(!t) return;
+  save(); loadSession(t.dataset.go);
+  document.getElementById('histSheet').classList.remove('on');
+  window.scrollTo({top:0});
+});
+
+/* コピー */
+document.getElementById('copyBtn').addEventListener('click', async ()=>{
+  save();
+  const text = buildText(cur);
+  try{
+    await navigator.clipboard.writeText(text);
+    toast('コピーしました → Claudeに貼り付け');
+  }catch(err){
+    document.getElementById('fallback').value = text;
+    document.getElementById('fbSheet').classList.add('on');
+  }
+});
+
+/* シート閉じる */
+document.querySelectorAll('.overlay').forEach(ov=>{
+  ov.addEventListener('click', e=>{ if(e.target===ov || e.target.dataset.close!=null) ov.classList.remove('on'); });
+});
+
+/* toast */
+let toastT;
+function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('on'),1800); }
+
+/* 起動 */
+loadSession(curDate);
+</script>
+</body>
+</html>
