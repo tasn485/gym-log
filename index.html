@@ -87,6 +87,35 @@
 
   .toast{ position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(20px); background:var(--ink); color:#fff; padding:11px 18px; border-radius:999px; font-size:.88rem; font-weight:600; opacity:0; transition:.25s; z-index:80; pointer-events:none; white-space:nowrap; }
   .toast.on{ opacity:1; transform:translateX(-50%) translateY(0); }
+
+  /* ==== メニュー指示（プランA拡張）==== */
+  .banner{ background:var(--card); border:1px solid var(--line); border-left:3px solid var(--accent); border-radius:10px; padding:9px 12px; margin:0 0 12px; font-size:.85rem; }
+  .banner .t{ font-weight:700; }
+  .banner .sub{ color:var(--sub); display:block; margin-top:3px; font-size:.8rem; }
+  .acc{ background:var(--card); border:1px solid var(--line); border-radius:11px; margin:0 0 12px; overflow:hidden; }
+  .acc>summary{ list-style:none; cursor:pointer; padding:11px 13px; font-weight:700; font-size:.88rem; color:var(--accent); }
+  .acc>summary::-webkit-details-marker{ display:none; }
+  .acc>summary::before{ content:'▸ '; }
+  .acc[open]>summary::before{ content:'▾ '; }
+  .acc .body{ padding:0 14px 12px; font-size:.83rem; color:var(--ink); }
+  .acc .body ul{ margin:2px 0; padding-left:1.1em; }
+  .acc .body li{ margin:3px 0; }
+  .ex-order{ display:inline-flex; align-items:center; justify-content:center; min-width:22px; height:22px; border-radius:6px; background:var(--accent); color:#fff; font-size:.8rem; font-weight:700; flex:none; }
+  .ex-name small{ font-weight:500; color:var(--sub); font-size:.78rem; margin-left:5px; }
+  .ex-target{ font-size:.78rem; color:var(--accent-dark); background:var(--soft); border-radius:6px; padding:2px 9px; display:inline-block; margin:2px 0 6px; font-weight:600; }
+  .cue-line{ font-size:.86rem; color:var(--ink); font-weight:600; margin:0 0 5px; line-height:1.5; }
+  details.cue{ margin:0 0 8px; }
+  details.cue>summary{ list-style:none; cursor:pointer; color:var(--accent); font-size:.82rem; font-weight:700; padding:2px 0; }
+  details.cue>summary::-webkit-details-marker{ display:none; }
+  details.cue>summary::before{ content:'▸ コツ・代替・漸増'; }
+  details.cue[open]>summary::before{ content:'▾ コツ・代替・漸増'; }
+  details.cue>summary span{ display:none; }
+  .cue-body{ background:#fbfdfd; border:1px dashed var(--line); border-radius:9px; padding:8px 11px; margin:5px 0 0; font-size:.83rem; }
+  .cue-body ul{ margin:0; padding-left:1.05em; }
+  .cue-body li{ margin:2px 0; }
+  .cue-body .alt,.cue-body .prog{ color:var(--sub); margin-top:6px; }
+  .cue-body .alt b,.cue-body .prog b{ color:var(--ink); font-weight:600; }
+  .sug{ font-size:.8rem; color:#1c6f48; background:#e8f6ee; border:1px solid #bfe6cf; border-radius:8px; padding:6px 10px; margin:4px 0 8px; font-weight:600; line-height:1.45; }
 </style>
 </head>
 <body>
@@ -106,8 +135,11 @@
 </header>
 
 <div class="wrap">
+  <div id="banner"></div>
+  <div id="warmup"></div>
   <div id="exercises"></div>
   <button class="addex" id="addEx">＋ 種目を追加</button>
+  <div id="cooldown"></div>
 
   <div class="snote-wrap">
     <label for="snote">今日のメモ（体調・気づき・任意）</label>
@@ -155,21 +187,58 @@
 /* ===== あなたの週割り・種目（fitness_plan.md / weekly_workout_plan.html 準拠） ===== */
 const DOW = ['日','月','火','水','木','金','土'];
 const DAYS = {
-  '月':{ label:'月・上半身プッシュ', ex:['チェストプレス','ショルダープレス','サイドレイズ','トライセッププレスダウン','アブドミナル'] },
-  '火':{ label:'火・背中プル#1 広がり＋二頭', ex:['ラットプルダウン','ワンハンド・ダンベルロー','リアレイズ','ダンベルカール','ヒップアブダクション'] },
-  '水':{ label:'水・下半身A お尻/もも裏（重）', ex:['ヒップスラスト','ルーマニアンDL','レッグプレス','ヒップアブダクション'] },
-  '木':{ label:'木・背中プル#2 厚み＋後肩', ex:['ワンハンド・ダンベルロー','ラットプルダウン(ワイド)','リアレイズ','サイドレイズ','アブドミナル'] },
-  '金':{ label:'金・休館（完全休養）', ex:[] },
-  '土':{ label:'土・下半身B お尻（重）＋体幹', ex:['ヒップスラスト','レッグカール','ケーブルキックバック','プランク','アブドミナル'] },
-  '日':{ label:'日・予備/回復（抜くならここ）', ex:['ダンベルカール','トライセッププレスダウン','プランク'] }
+  '月':{ label:'月・上半身プッシュ', target:'胸・肩・三頭（夜は脚の有酸素）', session:'夜 MOVE BODY POWER30 21:15〜21:50（脚有酸素）／所要 筋トレ45〜50分＋レッスン30分', ex:['チェストプレス','ショルダープレス','サイドレイズ','トライセッププレスダウン','アブドミナル'] },
+  '火':{ label:'火・背中プル#1 広がり＋二頭', target:'背中（広背筋）・二頭', session:'有酸素は任意（物足りなければ傾斜歩行10〜15分）／所要 50〜60分', ex:['ラットプルダウン','ワンハンド・ダンベルロー','リアレイズ','ダンベルカール','ヒップアブダクション'] },
+  '水':{ label:'水・下半身A お尻/もも裏（重）', target:'大殿筋・ハムストリング', session:'夜 POWER FLOW PILATES45 19:00〜／所要 筋トレ55〜65分＋レッスン45分', ex:['ヒップスラスト','ルーマニアンDL','レッグプレス','ヒップアブダクション'] },
+  '木':{ label:'木・背中プル#2 厚み＋後肩', target:'背中（僧帽・菱形＝厚み）・後肩', session:'有酸素は任意（傾斜歩行10〜15分）／所要 50〜60分', ex:['ワンハンド・ダンベルロー','ラットプルダウン(ワイド)','リアレイズ','サイドレイズ','アブドミナル'] },
+  '金':{ label:'金・休館（完全休養）', target:'ジム休館＝完全休養（睡眠7〜9h死守・宅トレなし）', session:'', ex:[] },
+  '土':{ label:'土・下半身B お尻（重）＋体幹', target:'大殿筋・中殿筋・ハム・体幹', session:'朝 カラダほぐすYOGA45 10:05 or 美姿勢ワークアウト 11:10／所要 筋トレ50〜60分', ex:['ヒップスラスト','レッグカール','ケーブルキックバック','プランク','アブドミナル'] },
+  '日':{ label:'日・予備/回復（抜くならここ）', target:'(A)疲れ→回復 ／ (B)元気→腕・体幹の弱点パンプ', session:'(B)なら傾斜歩行15〜20分／所要 30〜45分', ex:['ダンベルカール','トライセッププレスダウン','プランク'] }
 };
-/* 初期重量ヒント（logの実測が一次ソース。前回値が無い時のプレースホルダ） */
-const HINTS = {
-  'チェストプレス':'25','ショルダープレス':'実測','サイドレイズ':'2〜3','トライセッププレスダウン':'軽め','アブドミナル':'25',
-  'ラットプルダウン':'17.5〜20','ラットプルダウン(ワイド)':'25','ワンハンド・ダンベルロー':'4〜6','リアレイズ':'4','ダンベルカール':'4',
-  'ヒップアブダクション':'W18/締23','ヒップスラスト':'空バー+両側5','ルーマニアンDL':'空バー','レッグプレス':'100〜105','レッグカール':'実測',
-  'ケーブルキックバック':'軽め','プランク':'秒','傾斜トレッドミル':'傾斜%'
+
+/* ===== 種目メタ（指示情報・weekly_workout_plan.html / fitness_plan.md が一次ソース） =====
+   表示専用。保存構造(name/sets/note)には入れず、種目名で引く。 */
+const META = {
+  'チェストプレス':{ gear:'マシン', muscle:'大胸筋', weight:'25kg', wlabel:'🟢', setrep:'3〜4×10-12', rest:'2〜3分',
+    cues:['肩甲骨を寄せて胸を張る','前ももでなく胸で押す'], alt:'ダンベル/スミス・ベンチプレス', prog:'全セット上限をRIR1-2で挙げきれたら+2.5kg' },
+  'ショルダープレス':{ gear:'マシン', muscle:'三角筋', weight:'今日実測', wlabel:'🔴', setrep:'3×10-12', rest:'2〜3分',
+    cues:['耳の横で真上に押す','肩をすくめない'], alt:'ダンベル・ショルダープレス', prog:'挙げきれたら+2.5kg' },
+  'サイドレイズ':{ gear:'ダンベル', muscle:'三角筋中部', weight:'1.5〜3kg', wlabel:'🟡', setrep:'3×12-15', rest:'60〜90秒',
+    cues:['反動を使わない','肩に丸みを付けて華奢見え','逆三角でウエスト細見え'], prog:'15回×3が楽になったら+1〜2kg' },
+  'トライセッププレスダウン':{ gear:'ケーブル', muscle:'上腕三頭筋', weight:'軽めから実測', wlabel:'🔴', setrep:'3×12-15', rest:'60〜90秒',
+    cues:['肘を体側に固定','肘から先だけ動かす'], alt:'ダンベル・キックバック/フレンチプレス' },
+  'アブドミナル':{ gear:'マシン', muscle:'腹直筋', weight:'25kg', wlabel:'🟢', setrep:'2〜3×15', rest:'60〜90秒',
+    cues:['腰を反らせず腹で持ち上げる','息を吐きながら丸める'] },
+  'ラットプルダウン':{ gear:'マシン', muscle:'広背筋（広がり）', weight:'17.5〜20kg', wlabel:'🟡', setrep:'3〜4×10-12', rest:'60〜75秒',
+    cues:['脇の下〜背中の外側を意識・腕に逃がさない','肩甲骨を先に下げてから引く','胸の上部まで引く（可動域を深く）','下ろし2〜3秒＋タメ1秒'], prog:'背中に効く感覚とフルレンジが安定してから漸増（今はフォーム習得中）' },
+  'ラットプルダウン(ワイド)':{ gear:'マシン', muscle:'広背筋（外側・広がり）', weight:'25kg', wlabel:'🟢', setrep:'3×10-12', rest:'60〜75秒',
+    cues:['ワイドグリップで背中の外側に効かせる','肩甲骨先行・腕で引かない'] },
+  'ワンハンド・ダンベルロー':{ gear:'ダンベル＋ベンチ', muscle:'広背筋・僧帽筋（厚み）', weight:'片手4kg', wlabel:'🟡', setrep:'3〜4×10-12', rest:'60〜75秒',
+    cues:['サムレスで握る','肘で引く・肩甲骨を先に動かす','みぞおち脇まで引く','腕に効くなら背中に入る重さへ調整'], alt:'スミス・ベントオーバーロー（シーテッドロー代替）' },
+  'リアレイズ':{ gear:'ダンベル/ケーブル', muscle:'後部三角筋', weight:'片手4kg', wlabel:'🟢', setrep:'2〜3×15', rest:'60〜90秒',
+    cues:['反動なし・上で1秒','後肩＝猫背・姿勢に効く'] },
+  'ダンベルカール':{ gear:'ダンベル', muscle:'上腕二頭筋', weight:'片手4kg', wlabel:'🟢', setrep:'3×12-15', rest:'60〜90秒',
+    cues:['strict（反動を使わない）','腕は弱点＝丁寧に'], alt:'プリチャーカール台も可', prog:'楽になったら+1〜2kg' },
+  'ヒップアブダクション':{ gear:'アウターサイ・マシン', muscle:'中臀筋', weight:'W-up18kg／締め23kg＋トップ27kg', wlabel:'🟡', setrep:'2〜3×15-20', rest:'60〜90秒（短め）',
+    cues:['綺麗に出せる重さで','X脚の中臀筋を強化','締め27kgはレップを3→6→8で橋渡し'] },
+  'ヒップスラスト':{ gear:'スミス＋ベンチ', muscle:'大殿筋', weight:'両側5kgずつ→次回両側7.5kgずつ', wlabel:'🟢', setrep:'3〜4×8-12', rest:'2〜3分',
+    cues:['フルROMで下げる','頂点で骨盤を後傾させてお尻をロック','腰を反らせない（反り腰の矯正にもなる）','反動を使わない'], prog:'8-12が安定したら両側+2.5kgずつ' },
+  'ルーマニアンDL':{ gear:'ダンベル/スミス', muscle:'ハムストリング・大殿筋', weight:'空バー維持', wlabel:'🟡', setrep:'3×8-10', rest:'2〜3分',
+    cues:['尻を後ろへ引く（ヒンジ）','膝は軽く曲げて固定・伸ばしきらない','背中はまっすぐ','もも裏が伸びて背が丸まる直前で止める'], prog:'フォームが安定するまで重量は増やさない' },
+  'レッグプレス':{ gear:'マシン', muscle:'大殿筋・ハムストリング', weight:'100〜105kg', wlabel:'🟢', setrep:'3〜4×10-12', rest:'2〜3分',
+    cues:['足は高め・やや広め・つま先やや外','膝はロックしない','深く下ろしすぎない'], prog:'全セット挙げきれたら+5kg' },
+  'レッグカール':{ gear:'マシン', muscle:'ハムストリング', weight:'今日実測', wlabel:'🔴', setrep:'3×12', rest:'60〜90秒',
+    cues:['もも裏の単関節','反動を使わず戻しもゆっくり'], alt:'ダンベル・ライイングレッグカール' },
+  'ケーブルキックバック':{ gear:'ケーブル', muscle:'大殿筋・中臀筋', weight:'軽め', wlabel:'🟡', setrep:'3×15-20', rest:'60〜90秒',
+    cues:['お尻を締めて後ろへ蹴る','腰を反らせない'] },
+  'プランク':{ gear:'自重', muscle:'体幹', weight:'自重', wlabel:'🟡', setrep:'3セット（秒で記録）', rest:'60秒',
+    cues:['お尻を締めて骨盤を後傾','腰を反らせない'] }
 };
+
+/* 共通ウォームアップ/クールダウン（weekly_workout_plan.html 準拠・🟡） */
+const WARMUP = ['傾斜トレッドミル速歩 or バイクで体温up 3〜5分','グルート活性化＝バンドのクラムシェル/アウターサイ軽め 15〜20回×1〜2','姿勢ドリル：股関節前ストレッチ左右30秒／キャットカウ・胸椎回旋10回／チンタック10回','プル日＝バンド・プルアパート15回／プッシュ日＝肩の外旋ウォームアップ','各日の第1種目は50%重量でランプアップ1セット'];
+const COOLDOWN = ['使った筋を各30秒ストレッチ','緩める対象＝腰・背中・前もも重点（反り腰/前もも張り対策）','90-90ブリージング or チャイルドポーズで肋骨を締めて呼吸リセット'];
+
 /* 追加パネルに出す種目マスター */
 const MASTER = ['チェストプレス','ショルダープレス','サイドレイズ','トライセッププレスダウン','アブドミナル',
   'ラットプルダウン','ラットプルダウン(ワイド)','ワンハンド・ダンベルロー','リアレイズ','ダンベルカール',
@@ -229,12 +298,48 @@ function renderMenu(){
 }
 
 function render(){
+  renderTop();
   const box = document.getElementById('exercises');
   if(!cur.exercises.length){
-    box.innerHTML = `<div class="empty">種目がありません。<br>「＋ 種目を追加」か、上のメニューを選んでください。</div>`;
+    const isRest = !((DAYS[cur.day]?.ex)||[]).length;
+    box.innerHTML = isRest
+      ? `<div class="empty">🛌 今日は休館・完全休養日。<br>回復＝筋肉が育つ日。睡眠7〜9時間を死守。</div>`
+      : `<div class="empty">種目がありません。<br>「＋ 種目を追加」か、上のメニューを選んでください。</div>`;
     return;
   }
   box.innerHTML = cur.exercises.map((ex,i)=> exCard(ex,i)).join('');
+}
+
+/* 今日の狙いバナー＋ウォームアップ/クールダウン */
+function renderTop(){
+  const d = DAYS[cur.day] || {};
+  const isRest = !((d.ex)||[]).length;
+  document.getElementById('banner').innerHTML = d.target
+    ? `<div class="banner"><span class="t">🎯 今日の狙い：</span>${escHtml(d.target)}${d.session?`<span class="sub">${escHtml(d.session)}</span>`:''}</div>`
+    : '';
+  const wc = document.getElementById('warmup');
+  const cc = document.getElementById('cooldown');
+  if(isRest){ wc.innerHTML=''; cc.innerHTML=''; return; }
+  wc.innerHTML = accBlock('ウォームアップ（5〜8分）', WARMUP);
+  cc.innerHTML = accBlock('クールダウン（5分）', COOLDOWN);
+}
+function accBlock(title, items){
+  return `<details class="acc"><summary>${escHtml(title)}</summary><div class="body"><ul>${items.map(x=>`<li>${escHtml(x)}</li>`).join('')}</ul></div></details>`;
+}
+
+/* 漸増サジェスト：前回の全セットが上限レップに達していたら「上げる合図」を出す（アプリ内計算＝Claude不要） */
+function repMax(setrep){
+  const parts = String(setrep).split(/×|x/);
+  if(parts.length < 2) return null;                 // 「3セット（秒で記録）」等は対象外
+  const nums = parts[1].match(/\d+/g);
+  return nums ? +nums[nums.length-1] : null;
+}
+function readyToProgress(name, prev){
+  const meta = META[name]; if(!meta || !prev) return false;
+  const rm = repMax(meta.setrep); if(!rm) return false;
+  const done = prev.sets.filter(st=> String(st.w).trim()!=='' || String(st.r).trim()!=='');
+  if(done.length < 2) return false;                 // 1セットだけの日は判定しない
+  return done.every(st=>{ const r = parseFloat(st.r); return !isNaN(r) && r >= rm; });
 }
 
 function fmtSet(st){
@@ -245,19 +350,45 @@ function fmtSet(st){
   return '';
 }
 function exCard(ex,i){
+  const meta = META[ex.name];
   const p = prevOf(ex.name);
+
+  /* 指示行（目標 set×rep ・ 目安重量 ・ レスト） */
+  const gear = meta && meta.gear ? `<small>${escHtml(meta.gear)}</small>` : '';
+  const target = meta && meta.muscle ? `<div class="ex-target">🎯 ${escHtml(meta.muscle)}</div>` : '';
+  let cueLine = '';
+  if(meta){
+    const bits = [];
+    if(meta.setrep) bits.push(`目標 ${escHtml(meta.setrep)}`);
+    if(meta.weight) bits.push(`目安 ${escHtml(meta.weight)}${meta.wlabel||''}`);
+    if(meta.rest)   bits.push(`⏱ ${escHtml(meta.rest)}`);
+    if(bits.length) cueLine = `<div class="cue-line">${bits.join(' ・ ')}</div>`;
+  }
+
+  /* コツ・代替・漸増（折りたたみ） */
+  let cueDet = '';
+  if(meta && ((meta.cues && meta.cues.length) || meta.alt || meta.prog)){
+    const lis  = (meta.cues||[]).map(c=>`<li>${escHtml(c)}</li>`).join('');
+    const alt  = meta.alt  ? `<div class="alt"><b>代替：</b>${escHtml(meta.alt)}</div>` : '';
+    const prog = meta.prog ? `<div class="prog"><b>漸増：</b>${escHtml(meta.prog)}</div>` : '';
+    cueDet = `<details class="cue"><summary><span>コツ・代替・漸増</span></summary><div class="cue-body"><ul>${lis}</ul>${alt}${prog}</div></details>`;
+  }
+
+  /* 前回値＋漸増サジェスト */
   let prevHtml = '';
   if(p){
     const txt = p.sets.map(fmtSet).join(' / ');
     prevHtml = `<div class="prev"><button class="copyprev" data-copyprev="${i}">前回を入れる</button>前回 <b>${txt}</b> <span style="opacity:.7">(${p.date.slice(5)})</span></div>`;
-  } else {
-    const hint = HINTS[ex.name];
-    prevHtml = hint ? `<div class="prev">目安 <b>${hint}</b></div>` : '';
+    if(readyToProgress(ex.name, p)){
+      const dumb = meta && /ダンベル/.test(meta.gear||'');
+      prevHtml += `<div class="sug">✓ 前回、全セット上限レップ達成。今日は一段上げてみる合図（目安 ${dumb?'+1〜2kg':'+2.5kg'}）</div>`;
+    }
   }
+
   const rows = ex.sets.map((st,j)=>`
     <div class="setrow">
       <span class="setno">${j+1}</span>
-      <span class="field"><input inputmode="decimal" data-f="w" data-e="${i}" data-s="${j}" value="${escAttr(st.w)}" placeholder="${HINTS[ex.name]&&!prevOf(ex.name)?'':''}"><span class="u">kg</span></span>
+      <span class="field"><input inputmode="decimal" data-f="w" data-e="${i}" data-s="${j}" value="${escAttr(st.w)}"><span class="u">kg</span></span>
       <span class="times">×</span>
       <span class="field"><input inputmode="numeric" data-f="r" data-e="${i}" data-s="${j}" value="${escAttr(st.r)}"><span class="u">回</span></span>
       <button class="setdel" data-delset="${i}_${j}" aria-label="このセットを削除">✕</button>
@@ -265,9 +396,13 @@ function exCard(ex,i){
   return `
     <div class="ex" data-ex="${i}">
       <div class="ex-head">
-        <span class="ex-name">${escHtml(ex.name)}</span>
+        <span class="ex-order">${i+1}</span>
+        <span class="ex-name">${escHtml(ex.name)}${gear}</span>
         <button class="ex-del" data-delex="${i}" aria-label="種目を削除">🗑</button>
       </div>
+      ${target}
+      ${cueLine}
+      ${cueDet}
       ${prevHtml}
       ${rows}
       <button class="addset" data-addset="${i}">＋ セットを追加</button>
