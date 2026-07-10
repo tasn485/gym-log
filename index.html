@@ -352,17 +352,41 @@
 <script>
 "use strict";
 
-/* ===== あなたの週割り・種目（fitness_plan.md / weekly_workout_plan.html 準拠） ===== */
+/* ===== あなたの週割り・種目（v3・fitness_plan.md / weekly_workout_plan.html 準拠）
+   主軸（水の脚・ラット・ロー・レッグカール）は両週固定、補助のみA/B週で差し替え。
+   exA＝Week A／exB＝Week B（無い曜日は両週共通でexAを使う） ===== */
 const DOW = ['日','月','火','水','木','金','土'];
 const DAYS = {
-  '月':{ label:'月・上半身プッシュ', target:'胸・肩・三頭（夜は脚の有酸素）', session:'夜 MOVE BODY POWER30 21:15〜21:50（脚有酸素）／所要 筋トレ45〜50分＋レッスン30分', ex:['チェストプレス','ショルダープレス','サイドレイズ','トライセッププレスダウン','アブドミナル'] },
-  '火':{ label:'火・背中プル#1 広がり＋二頭', target:'背中（広背筋）・二頭', session:'有酸素は任意（物足りなければ傾斜歩行10〜15分）／所要 50〜60分', ex:['ラットプルダウン','ワンハンド・ダンベルロー','リアレイズ','ダンベルカール','ヒップアブダクション'] },
-  '水':{ label:'水・下半身A お尻/もも裏（重）', target:'大殿筋・ハムストリング', session:'夜 POWER FLOW PILATES45 19:00〜／所要 筋トレ55〜65分＋レッスン45分', ex:['ヒップスラスト','ルーマニアンDL','レッグプレス','ヒップアブダクション'] },
-  '木':{ label:'木・背中プル#2 厚み＋後肩', target:'背中（僧帽・菱形＝厚み）・後肩', session:'有酸素は任意（傾斜歩行10〜15分）／所要 50〜60分', ex:['ワンハンド・ダンベルロー','ラットプルダウン(ワイド)','リアレイズ','サイドレイズ','アブドミナル'] },
-  '金':{ label:'金・休館（完全休養）', target:'ジム休館＝完全休養（睡眠7〜9h死守・宅トレなし）', session:'', ex:[] },
-  '土':{ label:'土・下半身B お尻（重）＋体幹', target:'大殿筋・中殿筋・ハム・体幹', session:'朝 カラダほぐすYOGA45 10:05 or 美姿勢ワークアウト 11:10／所要 筋トレ50〜60分', ex:['ヒップスラスト','レッグカール','ケーブルキックバック','プランク','アブドミナル'] },
-  '日':{ label:'日・予備/回復（抜くならここ）', target:'(A)疲れ→回復 ／ (B)元気→腕・体幹の弱点パンプ', session:'(B)なら傾斜歩行15〜20分／所要 30〜45分', ex:['ダンベルカール','トライセッププレスダウン','プランク'] }
+  '月':{ label:'月・上半身プッシュ', target:'胸・肩・三頭（夜は脚の有酸素）', session:'夜 MOVE BODY POWER30 21:15〜21:50／所要 筋トレ40〜50分＋レッスン30分',
+    exA:['チェストプレス','ショルダープレス','サイドレイズ','フレンチプレス'],
+    exB:['チェストプレス','ショルダープレス','サイドレイズ','キックバック'] },
+  '火':{ label:'火・背中プル#1 広がり＋二頭', target:'背中（広背筋・広がり）・後肩・二頭・中臀筋', session:'有酸素は任意（物足りなければ傾斜歩行10〜15分）／所要 50〜60分',
+    exA:['ラットプルダウン(ワイド)','ワンハンド・ダンベルロー','リアレイズ','ダンベルカール','ヒップアブダクション'],
+    exB:['ラットプルダウン(ワイド)','ワンハンド・ダンベルロー','フェイスプル','ハンマーカール','ヒップアブダクション'] },
+  '水':{ label:'水・下半身A お尻/もも裏（重）', target:'大殿筋・ハムストリング（両週固定・漸増を追う主軸日）', session:'夜 POWER FLOW PILATES45 19:00〜／所要 筋トレ60〜70分＋レッスン45分',
+    exA:['ヒップスラスト','ルーマニアンDL','レッグプレス','レッグカール','ヒップアブダクション'] },
+  '木':{ label:'木・背中プル#2 厚み＋体幹', target:'背中（厚み）・後肩・体幹（抗回旋）', session:'有酸素は任意（傾斜歩行10〜15分）／所要 50〜60分',
+    exA:['ワンハンド・ダンベルロー','ラットプルダウン(ワイド)','リアレイズ','サイドレイズ','パロフプレス'],
+    exB:['ワンハンド・ダンベルロー','ラットプルダウン(ワイド)','リアレイズ','サイドレイズ','アブドミナル'] },
+  '金':{ label:'金・休館（完全休養）', target:'ジム休館＝完全休養（睡眠7〜9h死守・休養日カロリー1,300〜1,350）', session:'', exA:[] },
+  '土':{ label:'土・下半身B お尻/左右差＋体幹', target:'大殿筋（片側＝左右差矯正）・ハム・中臀筋・体幹（抗伸展）', session:'朝 カラダほぐすYOGA45 10:05 or 美姿勢ワークアウト 11:10／所要 筋トレ50〜60分',
+    exA:['B-スタンス片脚ヒップスラスト','レッグカール','ケーブルキックバック','ヒップアブダクション','デッドバグ','プランク'],
+    exB:['B-スタンス片脚ヒップスラスト','レッグカール','グルートブリッジ','ヒップアブダクション','デッドバグ','プランク'] },
+  '日':{ label:'日・予備/回復（抜くならここ）', target:'(A)疲れ→回復＝休養日カロリー ／ (B)元気→腕・体幹＋傾斜歩行＝訓練日カロリー', session:'(B)なら傾斜歩行15〜20分／所要 30〜45分',
+    exA:['ダンベルカール','フレンチプレス','プランク'] }
 };
+
+/* Week A/B判定：2026-07-06(月)の週＝Week A。以降、月曜起点で1週ごとにA/B交互 */
+function weekType(dateStr){
+  const d = new Date(dateStr+'T00:00:00');
+  const monday = new Date(d); monday.setDate(d.getDate() - ((d.getDay()+6)%7));
+  const weeks = Math.round((monday - new Date('2026-07-06T00:00:00')) / 604800000);
+  return ((weeks % 2) + 2) % 2 === 0 ? 'A' : 'B';
+}
+function dayEx(dow, dateStr){
+  const d = DAYS[dow]; if(!d) return [];
+  return (weekType(dateStr)==='B' && d.exB) ? d.exB : d.exA;
+}
 
 /* ===== 種目メタ（指示情報・weekly_workout_plan.html / fitness_plan.md が一次ソース） =====
    表示専用。保存構造(name/sets/note)には入れず、種目名で引く。 */
@@ -389,18 +413,34 @@ const META = {
     cues:['strict（反動を使わない）','腕は弱点＝丁寧に'], alt:'プリチャーカール台も可', prog:'楽になったら+1〜2kg' },
   'ヒップアブダクション':{ gear:'アウターサイ・マシン', muscle:'中臀筋', weight:'W-up18kg／締め23kg＋トップ27kg', wlabel:'<span class="dot y"></span>', setrep:'2〜3×15-20', rest:'60秒',
     cues:['綺麗に出せる重さで','X脚の中臀筋を強化','締め27kgはレップを3→6→8で橋渡し'] },
-  'ヒップスラスト':{ gear:'スミス＋ベンチ', muscle:'大殿筋', weight:'両側5kgずつ→次回両側7.5kgずつ', wlabel:'<span class="dot g"></span>', setrep:'3〜4×8-12', rest:'90〜120秒',
+  'ヒップスラスト':{ gear:'スミス＋ベンチ', muscle:'大殿筋', weight:'両側7.5kgずつテスト（前回両側5kgずつ×15）', wlabel:'<span class="dot y"></span>', setrep:'3〜4×8-12', rest:'90〜120秒',
     cues:['フルROMで下げる','頂点で骨盤を後傾させてお尻をロック','腰を反らせない（反り腰の矯正にもなる）','反動を使わない'], prog:'8-12が安定したら両側+2.5kgずつ' },
   'ルーマニアンDL':{ gear:'ダンベル/スミス', muscle:'ハムストリング・大殿筋', weight:'空バー維持', wlabel:'<span class="dot y"></span>', setrep:'3×8-10', rest:'90〜120秒', progLock:true,
     cues:['尻を後ろへ引く（ヒンジ）','膝は軽く曲げて固定・伸ばしきらない','背中はまっすぐ','もも裏が伸びて背が丸まる直前で止める'], prog:'フォームが安定するまで重量は増やさない' },
-  'レッグプレス':{ gear:'マシン', muscle:'大殿筋・ハムストリング', weight:'100〜105kg', wlabel:'<span class="dot g"></span>', setrep:'3〜4×10-12', rest:'90〜120秒',
+  'レッグプレス':{ gear:'マシン', muscle:'大殿筋・ハムストリング', weight:'100kg', wlabel:'<span class="dot g"></span>', setrep:'3〜4×10-12', rest:'90〜120秒',
     cues:['足は高め・やや広め・つま先やや外','膝はロックしない','深く下ろしすぎない'], prog:'全セット挙げきれたら+5kg' },
-  'レッグカール':{ gear:'マシン', muscle:'ハムストリング', weight:'今日実測', wlabel:'<span class="dot r"></span>', setrep:'3×12', rest:'60秒',
-    cues:['もも裏の単関節','反動を使わず戻しもゆっくり'], alt:'ダンベル・ライイングレッグカール' },
-  'ケーブルキックバック':{ gear:'ケーブル', muscle:'大殿筋・中臀筋', weight:'軽め', wlabel:'<span class="dot y"></span>', setrep:'3×15-20（左右各）', rest:'60秒', uni:true,
-    cues:['お尻を締めて後ろへ蹴る','腰を反らせない'] },
-  'プランク':{ gear:'自重', muscle:'体幹', weight:'自重', wlabel:'<span class="dot y"></span>', setrep:'3セット（秒で記録）', rest:'60秒',
-    cues:['お尻を締めて骨盤を後傾','腰を反らせない'] }
+  'レッグカール':{ gear:'マシン（シート型優先）', muscle:'ハムストリング', weight:'初回実測', wlabel:'<span class="dot r"></span>', setrep:'3×10-12', rest:'60秒',
+    cues:['もも裏で膝を曲げる（主働＝ハムストリング。前もも・腰に不関与）','下ろし3秒・反動なし','シート型（座る型）があれば優先＝ハムが伸びた状態で効く'], alt:'うつ伏せ型でもOK（フルレンジ＋下ろし3秒）', prog:'10-12×3が余裕なら+1ピン' },
+  'ケーブルキックバック':{ gear:'ケーブル', muscle:'大殿筋・中臀筋', weight:'初回実測（軽めから）', wlabel:'<span class="dot r"></span>', setrep:'3×15（左右各）', rest:'60秒', uni:true,
+    cues:['立位でお尻を締めて後ろへ蹴る','骨盤を固定・腰を反らせない'] },
+  'プランク':{ gear:'自重', muscle:'体幹', weight:'自重', wlabel:'<span class="dot y"></span>', setrep:'2×30〜45秒（秒で記録）', rest:'60秒',
+    cues:['お尻を締めて骨盤を後傾','腰を反らせない'] },
+  'フレンチプレス':{ gear:'ダンベル', muscle:'上腕三頭筋（長頭）', weight:'初回実測', wlabel:'<span class="dot r"></span>', setrep:'3×10-12', rest:'60秒',
+    cues:['座位で肋骨を締め反り腰にしない','肘を天井に固定・外に開かない','肘から先だけ深く下ろす（二の腕裏の最大部がストレッチされて効く）'], alt:'ケーブル・プレスダウン', prog:'挙げきれたら+1kg' },
+  'キックバック':{ gear:'ダンベル', muscle:'上腕三頭筋', weight:'初回実測', wlabel:'<span class="dot r"></span>', setrep:'3×12-15', rest:'60秒',
+    cues:['上腕を体側に固定し床と平行','肘から先だけ後ろへ・トップ1秒','反動を使わない'], prog:'挙げきれたら+1kg' },
+  'フェイスプル':{ gear:'ケーブル', muscle:'後部三角筋・僧帽筋', weight:'初回実測', wlabel:'<span class="dot r"></span>', setrep:'3×15', rest:'60秒',
+    cues:['ロープを顔の高さへ引く','肘を高く外へ開く','猫背・巻き肩の姿勢改善にも効く'] },
+  'ハンマーカール':{ gear:'ダンベル', muscle:'上腕二頭筋・前腕', weight:'片手4kg', wlabel:'<span class="dot y"></span>', setrep:'3×12-15', rest:'60秒',
+    cues:['縦握り（親指を上）で当たり替え','反動なし・下ろしゆっくり'] },
+  'B-スタンス片脚ヒップスラスト':{ gear:'スミス/床＋ベンチ', muscle:'大殿筋（片側）', weight:'自重〜軽・初回実測', wlabel:'<span class="dot r"></span>', setrep:'2〜3×8-10（左右各）', rest:'90秒', uni:true,
+    cues:['弱い側から・左右同数（重心右偏りの矯正）','頂点でお尻を締め骨盤後傾ロック','腰を反らせない','前もも・膝に負荷ほぼゼロ（ブルガリアンの代替）'] },
+  'パロフプレス':{ gear:'ケーブル', muscle:'腹斜筋・体幹（抗回旋）', weight:'初回実測', wlabel:'<span class="dot r"></span>', setrep:'3×10-12（左右各）', rest:'60秒', uni:true,
+    cues:['胸の前で真っ直ぐ押し出す','体をひねらせない（ひねりに耐える）','反り腰にしない'] },
+  'デッドバグ':{ gear:'自重', muscle:'体幹（抗伸展）', weight:'自重', wlabel:'<span class="dot y"></span>', setrep:'2×10（左右交互）', rest:'60秒',
+    cues:['腰を床に押し付けたまま対角の手足を伸ばす','腰が浮くなら可動域を狭く','反り腰の逆を学習する種目'] },
+  'グルートブリッジ':{ gear:'バンド/自重', muscle:'大殿筋', weight:'自重＋バンド', wlabel:'<span class="dot y"></span>', setrep:'3×15-20', rest:'60秒',
+    cues:['頂点で1秒お尻を締める','腰を反らせない'] }
 };
 
 /* 筋肉名→図のハイライト対応（部分一致・上から順に判定）
@@ -413,6 +453,7 @@ const MUSCLE_MAP = [
   ['上腕二頭筋',['f-biceps'],'dv-arm',['a-bi'],'二の腕の前側（力こぶ）'],
   ['上腕三頭筋',['f-triceps','b-triceps'],'dv-arm',['a-lat','a-long','a-med'],'二の腕の裏側。脇寄り＝長頭・外側＝外側頭・ひじ寄り＝内側頭'],
   ['腹直筋',['f-abs'],null,[],'お腹の前面（シックスパック）'],
+  ['腹斜筋',['f-obliques'],null,[],'脇腹。体をひねる／ひねりに耐える'],
   ['体幹',['f-abs','f-obliques','b-lower_back'],null,[],'お腹まわりと腰。胴体全体を固定する'],
   ['広背筋',['b-upper_back'],null,[],'背中の外側。脇の下から腰にかけて広がる'],
   ['僧帽筋',['b-trapezius'],null,[],'首のつけ根から肩甲骨まわり'],
@@ -429,10 +470,10 @@ const WARMUP = ['傾斜トレッドミル速歩 or バイクで体温up 3〜5分
 const COOLDOWN = ['使った筋を各30秒ストレッチ','緩める対象＝腰・背中・前もも重点（反り腰/前もも張り対策）','90-90ブリージング or チャイルドポーズで肋骨を締めて呼吸リセット'];
 
 /* 追加パネルに出す種目マスター */
-const MASTER = ['チェストプレス','ショルダープレス','サイドレイズ','トライセッププレスダウン','アブドミナル',
-  'ラットプルダウン','ラットプルダウン(ワイド)','ワンハンド・ダンベルロー','リアレイズ','ダンベルカール',
-  'ヒップアブダクション','ヒップスラスト','ルーマニアンDL','レッグプレス','レッグカール','ケーブルキックバック',
-  'プランク','傾斜トレッドミル','スミス・ベントオーバーロー','プリチャーカール'];
+const MASTER = ['チェストプレス','ショルダープレス','サイドレイズ','フレンチプレス','キックバック','トライセッププレスダウン',
+  'ラットプルダウン(ワイド)','ラットプルダウン','ワンハンド・ダンベルロー','リアレイズ','フェイスプル','ダンベルカール','ハンマーカール',
+  'ヒップスラスト','B-スタンス片脚ヒップスラスト','ルーマニアンDL','レッグプレス','レッグカール','ケーブルキックバック','グルートブリッジ','ヒップアブダクション',
+  'パロフプレス','デッドバグ','プランク','アブドミナル','傾斜トレッドミル','スミス・ベントオーバーロー','プリチャーカール'];
 
 /* ===== 状態 ===== */
 const KEY = 'gymlog_sessions_v1';
@@ -455,7 +496,7 @@ function dowOf(dateStr){ return DOW[new Date(dateStr+'T00:00:00').getDay()]; }
 
 function newSession(date){
   const dow = dowOf(date);
-  const ex = (DAYS[dow]?.ex || []).map(name=>({ name, sets:[{w:'',r:''}], note:'' }));
+  const ex = dayEx(dow, date).map(name=>({ name, sets:[{w:'',r:''}], note:'' }));
   return { date, day:dow, note:'', exercises:ex };
 }
 function loadSession(date){
@@ -492,7 +533,7 @@ function render(){
   renderTop();
   const box = document.getElementById('exercises');
   if(!cur.exercises.length){
-    const isRest = !((DAYS[cur.day]?.ex)||[]).length;
+    const isRest = !dayEx(cur.day, curDate).length;
     box.innerHTML = isRest
       ? `<div class="empty">今日は休館・完全休養日。<br>回復＝筋肉が育つ日。睡眠7〜9時間を死守。</div>`
       : `<div class="empty">種目がありません。<br>「＋ 種目を追加」か、上のメニューを選んでください。</div>`;
@@ -509,9 +550,9 @@ function sizeNotes(){
 /* 今日の狙いバナー＋ウォームアップ/クールダウン */
 function renderTop(){
   const d = DAYS[cur.day] || {};
-  const isRest = !((d.ex)||[]).length;
+  const isRest = !dayEx(cur.day, curDate).length;
   document.getElementById('banner').innerHTML = d.target
-    ? `<div class="banner"><span class="t">今日の狙い</span>${escHtml(d.target)}${d.session?`<span class="sub">${escHtml(d.session)}</span>`:''}</div>`
+    ? `<div class="banner"><span class="t">今日の狙い（${weekType(curDate)}週）</span>${escHtml(d.target)}${d.session?`<span class="sub">${escHtml(d.session)}</span>`:''}</div>`
     : '';
   const wc = document.getElementById('warmup');
   const cc = document.getElementById('cooldown');
@@ -741,7 +782,7 @@ function shiftDay(n){ save(); const d=new Date(curDate+'T00:00:00'); d.setDate(d
 
 document.getElementById('menu').addEventListener('change', e=>{
   const dow = e.target.value; cur.day = dow;
-  const preset = DAYS[dow].ex;
+  const preset = dayEx(dow, curDate);
   const existing = new Set(cur.exercises.map(x=>x.name));
   const toAdd = preset.filter(n=> !existing.has(n));
   if(toAdd.length){
@@ -756,7 +797,7 @@ const addSheet = document.getElementById('addSheet');
 document.getElementById('addEx').addEventListener('click', ()=>{
   const box = document.getElementById('addChips');
   const dow = cur.day;
-  const todayEx = DAYS[dow]?.ex || [];
+  const todayEx = dayEx(dow, curDate);
   const others = MASTER.filter(n=> !todayEx.includes(n));
   box.innerHTML =
     (todayEx.length? `<div class="grouplabel">${DAYS[dow].label} の種目</div><div class="chipgrid">${todayEx.map(chip).join('')}</div>`:'') +
