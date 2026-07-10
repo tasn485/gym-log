@@ -139,6 +139,17 @@
   .msvg .ov{ display:none; fill:var(--accent); opacity:.92; }
   .msvg .ov.on{ display:block; }
   .msvg text{ fill:var(--sub); font-size:9px; text-anchor:middle; font-weight:600; }
+  .dvwrap{ display:none; border-top:1px dashed var(--line2); margin-top:10px; padding-top:8px; }
+  .dvwrap.on{ display:block; }
+  .dvh{ font-size:.72rem; color:var(--sub); font-weight:700; letter-spacing:.06em; margin:0 2px 2px; }
+  .dvsvg{ display:none; width:100%; max-width:250px; margin:0 auto; }
+  .dvsvg.on{ display:block; }
+  .dvsvg .base{ fill:var(--sil); opacity:.55; }
+  .dvsvg .m{ fill:var(--sil); stroke:var(--sheet); stroke-width:.8; }
+  .dvsvg .m.on{ fill:var(--accent); opacity:.92; }
+  .dvsvg text{ fill:var(--sub); font-size:7px; font-weight:600; }
+  .dvsvg .ld{ stroke:var(--sub); stroke-width:.7; opacity:.7; fill:none; }
+  .mcap{ font-size:.84rem; color:var(--ink); margin:8px 2px 0; line-height:1.7; }
 
   /* footer */
   footer{ position:fixed; left:0; right:0; bottom:0; background:var(--footbg); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border-top:1px solid var(--line); padding:10px 0 calc(10px + env(safe-area-inset-bottom)); z-index:40; }
@@ -294,6 +305,42 @@
       </g>
       <text x="55" y="169">前から</text><text x="145" y="169">後ろから</text>
     </svg>
+    <div class="dvwrap" id="dvwrap">
+      <p class="dvh">拡大：横から見た図</p>
+      <svg class="dvsvg" id="dv-shoulder" viewBox="0 0 140 100" aria-hidden="true">
+        <ellipse class="base" cx="42" cy="12" rx="9.5" ry="11.5"/>
+        <path class="base" d="M37,21 C35,28 33,32 30,36 C27,45 27,58 28,70 L28,100 L80,100 C80,74 79,55 76,44 C72,35 65,29 58,26 C51,28 43,26 37,21 Z"/>
+        <path class="base" d="M46,50 C44,64 44,82 44,100 L64,100 C64,78 67,60 69,49 Z"/>
+        <path class="m" data-m="d-front" d="M45,48 C43,40 46,33 52,30 C53,40 55,50 58,58 C53,56 48,53 45,48 Z"/>
+        <path class="m" data-m="d-mid" d="M52,30 C56,28 62,29 66,32 C64,42 61,52 58,58 C55,50 53,40 52,30 Z"/>
+        <path class="m" data-m="d-rear" d="M66,32 C69,35 70,41 69,46 C66,53 62,56 58,58 C61,52 64,42 66,32 Z"/>
+        <text x="10" y="38">前部</text><path class="ld" d="M26,36 L46,38"/>
+        <text x="82" y="18">中部</text><path class="ld" d="M88,21 L60,29"/>
+        <text x="92" y="48">後部</text><path class="ld" d="M91,46 L68,43"/>
+      </svg>
+      <svg class="dvsvg" id="dv-arm" viewBox="0 0 140 100" aria-hidden="true">
+        <path class="base" d="M38,18 C41,9 60,8 63,16 C66,24 67,38 66,52 C65,63 63,72 59,79 L47,79 C44,77 42,73 41,67 C37,54 36,40 38,18 Z"/>
+        <path class="base" d="M45,79 C43,87 41,93 39,97 L54,97 C56,90 58,84 59,79 Z"/>
+        <path class="m" data-m="a-bi" d="M41,29 C37,36 36,46 39,56 C41,61 45,61 46,57 C47,47 47,35 44,29 Z"/>
+        <path class="m" data-m="a-lat" d="M47,27 C51,28 54,35 54,45 C54,50 52,53 49,52 C46,44 45,33 47,27 Z"/>
+        <path class="m" data-m="a-long" d="M57,26 C62,28 65,36 64,46 C63,53 60,55 57,54 C55,44 55,33 57,26 Z"/>
+        <path class="m" data-m="a-med" d="M50,57 C54,59 58,59 61,57 C61,63 59,70 55,73 C51,70 50,63 50,57 Z"/>
+        <text x="8" y="42">二頭筋</text><path class="ld" d="M29,40 L40,42"/>
+        <text x="86" y="14">外側頭</text><path class="ld" d="M84,12 L51,30"/>
+        <text x="90" y="36">長頭</text><path class="ld" d="M88,33 L62,34"/>
+        <text x="88" y="68">内側頭</text><path class="ld" d="M87,66 L59,65"/>
+      </svg>
+      <svg class="dvsvg" id="dv-hip" viewBox="0 0 140 100" aria-hidden="true">
+        <path class="base" d="M34,0 L62,0 C60,10 59,16 61,22 C74,26 80,38 76,50 C73,60 66,63 62,64 C65,70 66,80 64,90 L63,100 L36,100 C34,88 33,72 34,60 C32,50 30,38 32,28 C33,18 34,8 34,0 Z"/>
+        <path class="m" data-m="h-gmed" d="M45,19 C51,16 58,18 61,24 C61,30 57,35 51,35 C46,34 43,30 43,25 C43,22 44,21 45,19 Z"/>
+        <path class="m" data-m="h-gmax" d="M42,38 C51,32 66,32 73,41 C78,49 75,59 66,62 C55,65 45,60 42,52 C40,47 40,42 42,38 Z"/>
+        <path class="m" data-m="h-ham" d="M50,66 C57,64 62,66 63,70 C63,80 61,90 59,97 L52,97 C49,88 48,76 50,66 Z"/>
+        <text x="92" y="22">中臀筋</text><path class="ld" d="M90,20 L58,24"/>
+        <text x="94" y="50">大殿筋</text><path class="ld" d="M92,48 L70,47"/>
+        <text x="88" y="80">もも裏</text><path class="ld" d="M86,78 L62,78"/>
+      </svg>
+    </div>
+    <p class="mcap" id="mcap"></p>
     <p style="font-size:.8rem;color:var(--sub);margin:8px 2px 0;line-height:1.7">色が付いている場所＝この種目で効かせる筋肉。動作中はここに力が入っているかを意識してください。</p>
   </div>
 </div>
@@ -356,15 +403,25 @@ const META = {
     cues:['お尻を締めて骨盤を後傾','腰を反らせない'] }
 };
 
-/* 筋肉名→図のハイライト対応（部分一致・上から順に判定） */
+/* 筋肉名→図のハイライト対応（部分一致・上から順に判定）
+   [キーワード, 全身図ID, 詳細ビューID, 詳細パーツID, 位置のことば] */
 const MUSCLE_MAP = [
-  ['大胸筋',['f-chest']], ['後部三角筋',['b-back_deltoids']],
-  ['三角筋中部',['f-front_deltoids','b-back_deltoids']], ['三角筋',['f-front_deltoids','b-back_deltoids']],
-  ['上腕二頭筋',['f-biceps']], ['上腕三頭筋',['f-triceps','b-triceps']],
-  ['腹直筋',['f-abs']], ['体幹',['f-abs','f-obliques','b-lower_back']],
-  ['広背筋',['b-upper_back']], ['僧帽筋',['b-trapezius']], ['菱形',['b-trapezius']],
-  ['中臀筋',['b-gmed']], ['大殿筋',['b-gluteal']], ['ハムストリング',['b-hamstring']],
-  ['大腿四頭筋',['f-quadriceps']], ['前もも',['f-quadriceps']]
+  ['大胸筋',['f-chest'],null,[],'胸の前面全体'],
+  ['後部三角筋',['b-back_deltoids'],'dv-shoulder',['d-rear'],'肩の後ろ側（リアデルト）。腕を後ろに引くときに働く'],
+  ['三角筋中部',['f-front_deltoids','b-back_deltoids'],'dv-shoulder',['d-mid'],'肩の真横の丸み。腕を横に上げるときに働く'],
+  ['三角筋',['f-front_deltoids','b-back_deltoids'],'dv-shoulder',['d-front','d-mid','d-rear'],'肩全体を覆う筋肉（前・横・後ろの3部位）'],
+  ['上腕二頭筋',['f-biceps'],'dv-arm',['a-bi'],'二の腕の前側（力こぶ）'],
+  ['上腕三頭筋',['f-triceps','b-triceps'],'dv-arm',['a-lat','a-long','a-med'],'二の腕の裏側。脇寄り＝長頭・外側＝外側頭・ひじ寄り＝内側頭'],
+  ['腹直筋',['f-abs'],null,[],'お腹の前面（シックスパック）'],
+  ['体幹',['f-abs','f-obliques','b-lower_back'],null,[],'お腹まわりと腰。胴体全体を固定する'],
+  ['広背筋',['b-upper_back'],null,[],'背中の外側。脇の下から腰にかけて広がる'],
+  ['僧帽筋',['b-trapezius'],null,[],'首のつけ根から肩甲骨まわり'],
+  ['菱形',['b-trapezius'],null,[],'肩甲骨の間（背中の中心部）'],
+  ['中臀筋',['b-gmed'],'dv-hip',['h-gmed'],'お尻の上部外側（骨盤のすぐ横）'],
+  ['大殿筋',['b-gluteal'],'dv-hip',['h-gmax'],'お尻全体の大きな筋肉'],
+  ['ハムストリング',['b-hamstring'],'dv-hip',['h-ham'],'もも裏。お尻の下からひざ裏まで'],
+  ['大腿四頭筋',['f-quadriceps'],null,[],'ももの前側全体'],
+  ['前もも',['f-quadriceps'],null,[],'ももの前側全体']
 ];
 
 /* 共通ウォームアップ/クールダウン（weekly_workout_plan.html 準拠・🟡） */
@@ -650,13 +707,27 @@ document.getElementById('exercises').addEventListener('click', e=>{
 /* 筋肉の場所シート */
 function openMuscle(name){
   let s = name;
-  const ids = [];
-  MUSCLE_MAP.forEach(([k,rs])=>{
-    if(s.includes(k)){ rs.forEach(r=>{ if(!ids.includes(r)) ids.push(r); }); s = s.split(k).join(''); }
+  const ids = [], caps = [], parts = [];
+  let view = null;
+  MUSCLE_MAP.forEach(([k,rs,dv,dp,cap])=>{
+    if(s.includes(k)){
+      rs.forEach(r=>{ if(!ids.includes(r)) ids.push(r); });
+      if(cap && !caps.includes(cap)) caps.push(cap);
+      if(dv && !view) view = dv;
+      if(dv && dv===view) dp.forEach(p=>{ if(!parts.includes(p)) parts.push(p); });
+      s = s.split(k).join('');
+    }
   });
-  document.querySelectorAll('#muscleSheet [data-m]').forEach(g=>{
+  document.querySelectorAll('#muscleSheet .msvg [data-m]').forEach(g=>{
     g.classList.toggle('on', ids.includes(g.dataset.m));
   });
+  document.querySelectorAll('#muscleSheet .dvsvg').forEach(sv=>{
+    const act = sv.id===view;
+    sv.classList.toggle('on', act);
+    sv.querySelectorAll('.m').forEach(p=>{ p.classList.toggle('on', act && parts.includes(p.dataset.m)); });
+  });
+  document.getElementById('dvwrap').classList.toggle('on', !!view);
+  document.getElementById('mcap').textContent = caps.length ? '📍 ' + caps.join('／') : '';
   document.getElementById('muscleTitle').firstChild.textContent = name + ' ';
   document.getElementById('muscleSheet').classList.add('on');
 }
