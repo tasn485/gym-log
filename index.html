@@ -376,6 +376,11 @@ const DAYS = {
     exA:['ダンベルカール','フレンチプレス','プランク'] }
 };
 
+/* 日付指定の振替（イレギュラー日）：この日は指定曜日のメニューで開始する（未記録の日のみ有効） */
+const DATE_OVERRIDES = {
+  '2026-07-12': { day:'土', note:'7/11に飛んだ下半身Bの振替＠ティップネス宮前平。初実測3種（B-スタンス片脚ヒップスラスト・レッグカール・ケーブルキックバック）は軽めからフォーム優先で数字を決める。ヒップスラスト専用機/グルートマシンがあればスミス・ケーブルの代わりに使ってOK。レッグカールはシート型優先' }
+};
+
 /* Week A/B判定：2026-07-06(月)の週＝Week A。以降、月曜起点で1週ごとにA/B交互 */
 function weekType(dateStr){
   const d = new Date(dateStr+'T00:00:00');
@@ -495,9 +500,10 @@ function todayStr(){ const d=new Date(); return `${d.getFullYear()}-${String(d.g
 function dowOf(dateStr){ return DOW[new Date(dateStr+'T00:00:00').getDay()]; }
 
 function newSession(date){
-  const dow = dowOf(date);
+  const ov = DATE_OVERRIDES[date];
+  const dow = ov ? ov.day : dowOf(date);
   const ex = dayEx(dow, date).map(name=>({ name, sets:[{w:'',r:''}], note:'' }));
-  return { date, day:dow, note:'', exercises:ex };
+  return { date, day:dow, note: ov ? ov.note : '', exercises:ex };
 }
 function loadSession(date){
   curDate = date;
@@ -668,9 +674,8 @@ function summarize(sets){
   return done.map(fmtSet).join(' / ');
 }
 function buildText(s){
-  const dow = s.day || dowOf(s.date);
-  const label = DAYS[dow]?.label || '';
-  const lines = [`### ${s.date}(${dow}) ${label}`];
+  const label = DAYS[s.day || dowOf(s.date)]?.label || '';
+  const lines = [`### ${s.date}(${dowOf(s.date)}) ${label}`];
   s.exercises.forEach(ex=>{
     const body = summarize(ex.sets);
     if(!body && !ex.note.trim()) return;
@@ -824,7 +829,7 @@ document.getElementById('openHist').addEventListener('click', ()=>{
       const s = sessions[d];
       const n = s.exercises.filter(e=> e.sets.some(st=> String(st.w).trim()!=='' || String(st.r).trim()!=='')).length;
       const label = DAYS[s.day]?.label || '';
-      return `<div class="histitem"><div><div class="hd">${d}（${s.day}）</div><div class="hsub">${label.split('・').slice(1).join('・')||'—'}・${n}種目</div></div><button class="go" data-go="${d}">開く</button></div>`;
+      return `<div class="histitem"><div><div class="hd">${d}（${dowOf(d)}）</div><div class="hsub">${label.split('・').slice(1).join('・')||'—'}・${n}種目</div></div><button class="go" data-go="${d}">開く</button></div>`;
     }).join('');
   }
   document.getElementById('histSheet').classList.add('on');
