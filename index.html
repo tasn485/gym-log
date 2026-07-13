@@ -379,8 +379,10 @@ const DAYS = {
     exA:['ダンベルカール','フレンチプレス','プランク'] }
 };
 
-/* 日付指定の振替（イレギュラー日）：この日は指定曜日のメニューで開始する（未記録の日のみ有効） */
+/* 日付指定の振替（イレギュラー日）：この日は指定曜日のメニューで開始する（未記録の日のみ有効）。ex指定があれば種目リストも差し替え */
 const DATE_OVERRIDES = {
+  '2026-07-13': { day:'月', ex:['チェストプレス','ショルダープレス','サイドレイズ'],
+    note:'昼の40分圧縮プッシュ（Week Bだが三頭カットのためA/B差なし）。今夜POWER30なし→最終セットはRIR0〜1まで追い込みOK（フォームが崩れる前で終了）。ショルダープレス初実測＝軽い方から「10回で最後2回がキツい」を探す。チェストプレス25kg・全セット余裕なら最終セットのみ27.5kgテスト。5分余ればキックバック2セット追加可。有酸素の振替は不要＝食後の散歩+2,000歩で補う' },
   '2026-07-12': { day:'土', note:'7/11に飛んだ下半身Bの振替＠ティップネス宮前平。前日3万歩で前もも筋肉痛→各種目3セット→2セットに微減（主働のお尻・ハムは筋肉痛と非重複なので実施OK）。動的W-up後に前ももを再チェック、鋭い痛み・関節症状が出たら中止。初実測3種（B-スタンス片脚ヒップスラスト・レッグカール・ケーブルキックバック）は軽めからフォーム優先。ヒップスラスト専用機/グルートマシンがあれば使用OK。レッグカールはシート型優先。前ももに効いたら軽くして仕切り直し' }
 };
 
@@ -505,7 +507,7 @@ function dowOf(dateStr){ return DOW[new Date(dateStr+'T00:00:00').getDay()]; }
 function newSession(date){
   const ov = DATE_OVERRIDES[date];
   const dow = ov ? ov.day : dowOf(date);
-  const ex = dayEx(dow, date).map(name=>({ name, sets:[{w:'',r:''}], note:'' }));
+  const ex = ((ov && ov.ex) ? ov.ex : dayEx(dow, date)).map(name=>({ name, sets:[{w:'',r:''}], note:'' }));
   return { date, day:dow, note: ov ? ov.note : '', exercises:ex };
 }
 function loadSession(date){
