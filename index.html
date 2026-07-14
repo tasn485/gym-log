@@ -738,7 +738,10 @@ document.getElementById('exercises').addEventListener('click', e=>{
     const i = +t.dataset.delex;
     const ex = cur.exercises[i];
     const hasData = ex.note.trim() || ex.sets.some(st=> String(st.w).trim()!=='' || String(st.r).trim()!=='');
-    if(hasData && !confirm(`「${ex.name}」を削除しますか？\n入力済みの記録も消えます`)) return;
+    const msg = hasData
+      ? `「${ex.name}」を削除しますか？\n入力済みの記録も一緒に消えます`
+      : `「${ex.name}」を削除しますか？`;
+    if(!confirm(msg)) return;
     const snap = JSON.parse(JSON.stringify(ex));
     const date = cur.date;
     cur.exercises.splice(i,1); save(); render();
