@@ -180,6 +180,18 @@
   .histitem .hd{ font-weight:700; font-size:var(--fs-body); font-variant-numeric:tabular-nums; }
   .histitem .hsub{ font-size:var(--fs-cap); color:var(--sub); margin-top:2px; }
   .histitem .go{ margin-left:auto; border:1px solid var(--line2); color:var(--accent); background:none; border-radius:999px; padding:10px 18px; font-size:var(--fs-cap); font-weight:700; flex:none; }
+  .histtabs{ display:flex; gap:8px; margin:2px 0 14px; }
+  .histtab{ flex:1; padding:11px 0; border:1px solid var(--line2); background:var(--card2); color:var(--sub); border-radius:999px; font-size:var(--fs-cap); font-weight:700; }
+  .histtab.on{ background:var(--accent); color:#fff; border-color:var(--accent); }
+  .histday{ padding:6px 0 14px; border-bottom:1px solid var(--line); margin-bottom:6px; }
+  .histday .histitem{ border-bottom:none; padding-bottom:6px; }
+  .histex{ padding:4px 0 14px; border-bottom:1px solid var(--line); margin-bottom:8px; }
+  .hexn{ font-weight:700; font-size:var(--fs-body); margin:2px 2px 9px; }
+  .hxwrap{ display:flex; flex-direction:column; gap:6px; padding:2px 2px 0; }
+  .hx{ display:flex; align-items:baseline; gap:10px; font-size:var(--fs-cap); line-height:1.4; }
+  .hx .hxn{ color:var(--sub); min-width:8.5em; flex:none; }
+  .hx .hxd{ color:var(--sub); min-width:5.8em; flex:none; font-variant-numeric:tabular-nums; }
+  .hx .hxs{ color:var(--ink); font-weight:600; font-variant-numeric:tabular-nums; }
 
   textarea#fallback{ width:100%; min-height:220px; font-size:.8rem; padding:12px; border:1px solid var(--line2); border-radius:12px; font-family:ui-monospace,Menlo,monospace; background:var(--bg); color:var(--ink); }
 
@@ -255,6 +267,10 @@
 <div class="overlay" id="histSheet">
   <div class="sheet">
     <h2>これまでの記録 <button class="x" data-close>✕</button></h2>
+    <div class="histtabs">
+      <button class="histtab on" data-mode="date">日付順</button>
+      <button class="histtab" data-mode="ex">種目別（マシン）</button>
+    </div>
     <div id="histList"></div>
   </div>
 </div>
@@ -827,20 +843,52 @@ document.getElementById('addChips').addEventListener('click', e=>{
   window.scrollTo({ top:document.body.scrollHeight, behavior:'smooth' });
 });
 
-/* 履歴シート */
-document.getElementById('openHist').addEventListener('click', ()=>{
+/* 履歴シート（日付順／種目別） */
+let histMode = 'date';
+function renderHist(){
   const list = document.getElementById('histList');
   const dates = Object.keys(sessions).sort().reverse();
-  if(!dates.length){ list.innerHTML = `<div class="empty">まだ記録がありません。<br>重量・回数・メモをどれか1つ入力すると<br>その日が自動でここに載ります。</div>`; }
-  else {
-    list.innerHTML = dates.map(d=>{
+  const empty = `<div class="empty">まだ記録がありません。<br>重量・回数・メモをどれか1つ入力すると<br>その日が自動でここに載ります。</div>`;
+  if(!dates.length){ list.innerHTML = empty; return; }
+  if(histMode==='date'){
+    const html = dates.map(d=>{
       const s = sessions[d];
-      const n = s.exercises.filter(e=> e.sets.some(st=> String(st.w).trim()!=='' || String(st.r).trim()!=='')).length;
       const label = DAYS[s.day]?.label || '';
-      return `<div class="histitem"><div><div class="hd">${d}（${dowOf(d)}）</div><div class="hsub">${label.split('・').slice(1).join('・')||'—'}・${n}種目</div></div><button class="go" data-go="${d}">開く</button></div>`;
-    }).join('');
+      const sub = label.split('・').slice(1).join('・') || '—';
+      const rows = s.exercises.map(ex=>{
+        const body = summarize(ex.sets);
+        return body ? `<div class="hx"><span class="hxn">${escHtml(ex.name)}</span><span class="hxs">${escHtml(body)}</span></div>` : '';
+      }).filter(Boolean).join('');
+      if(!rows) return '';
+      return `<div class="histday"><div class="histitem"><div><div class="hd">${d}（${dowOf(d)}）</div><div class="hsub">${sub}</div></div><button class="go" data-go="${d}">開く</button></div><div class="hxwrap">${rows}</div></div>`;
+    }).filter(Boolean).join('');
+    list.innerHTML = html || empty;
+  } else {
+    const map = new Map(), order = [];
+    dates.forEach(d=>{
+      sessions[d].exercises.forEach(ex=>{
+        const body = summarize(ex.sets);
+        if(!body) return;
+        if(!map.has(ex.name)){ map.set(ex.name, []); order.push(ex.name); }
+        map.get(ex.name).push(`<div class="hx"><span class="hxd">${d.slice(5)}（${dowOf(d)}）</span><span class="hxs">${escHtml(body)}</span></div>`);
+      });
+    });
+    list.innerHTML = order.length
+      ? order.map(name=> `<div class="histex"><div class="hexn">${escHtml(name)}</div><div class="hxwrap">${map.get(name).join('')}</div></div>`).join('')
+      : empty;
   }
+}
+document.getElementById('openHist').addEventListener('click', ()=>{
+  save();
+  renderHist();
   document.getElementById('histSheet').classList.add('on');
+});
+document.querySelectorAll('.histtab').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    histMode = b.dataset.mode;
+    document.querySelectorAll('.histtab').forEach(x=> x.classList.toggle('on', x===b));
+    renderHist();
+  });
 });
 document.getElementById('histList').addEventListener('click', e=>{
   const t = e.target.closest('button[data-go]'); if(!t) return;
