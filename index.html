@@ -96,7 +96,6 @@
   .prev .pv{ flex:1; min-width:0; }
   .prev b{ color:var(--accent); font-weight:700; font-variant-numeric:tabular-nums; }
   .prev .pd{ font-size:var(--fs-cap); opacity:.8; }
-  .prev .copyprev{ flex:none; border:1px solid var(--line2); color:var(--accent); background:none; border-radius:999px; font-size:var(--fs-cap); padding:9px 14px; font-weight:600; }
   .sug{ font-size:var(--fs-body); color:var(--accent); border-left:2px solid var(--accent); padding:2px 0 2px 12px; margin:10px 3px 2px; line-height:1.55; font-weight:600; }
 
   /* 記録（数字が主役） */
@@ -581,8 +580,8 @@ function newSession(date){
 }
 function loadSession(date){
   curDate = date;
-  const src = sessions[date] || SEED[date];
-  cur = src ? JSON.parse(JSON.stringify(src)) : newSession(date);
+  // 記入画面はlocalStorageの入力のみ（SEEDは履歴表示専用＝記入欄には流し込まない＝常に空白から）
+  cur = sessions[date] ? JSON.parse(JSON.stringify(sessions[date])) : newSession(date);
   document.getElementById('date').value = date;
   document.getElementById('snote').value = cur.note;
   renderMenu();
@@ -700,7 +699,7 @@ function exCard(ex,i){
   let prevHtml = '';
   if(p){
     const txt = p.sets.map(fmtSet).join(' / ');
-    prevHtml = `<div class="prev"><span class="pv">前回 <b>${txt}</b> <span class="pd">${p.date.slice(5)}</span></span><button class="copyprev" data-copyprev="${i}">前回を入れる</button></div>`;
+    prevHtml = `<div class="prev"><span class="pv">前回 <b>${txt}</b> <span class="pd">${p.date.slice(5)}</span></span></div>`;
     if(readyToProgress(ex.name, p)){
       const dumb = meta && /ダンベル/.test(meta.gear||'');
       prevHtml += `<div class="sug">✓ 前回、全セット上限レップ達成。最後の2〜3回がキツかったなら ${dumb?'+1〜2kg':'+2.5kg'} を試す候補。まだ余裕があったなら据え置き</div>`;
@@ -822,11 +821,6 @@ document.getElementById('exercises').addEventListener('click', e=>{
       save(); render();
     });
   }
-  else if(t.dataset.copyprev!=null){
-    const ex = cur.exercises[+t.dataset.copyprev];
-    const p = prevOf(ex.name);
-    if(p){ ex.sets = p.sets.map(st=>({ w:st.w, r:st.r, side:st.side||'' })); save(); render(); toast('前回の重量を入れました'); }
-  }
 });
 
 /* 筋肉の場所シート */
@@ -916,7 +910,8 @@ function renderHist(){
         return body ? `<div class="hx"><span class="hxn">${escHtml(ex.name)}</span><span class="hxs">${escHtml(body)}</span></div>` : '';
       }).filter(Boolean).join('');
       if(!rows) return '';
-      return `<div class="histday"><div class="histitem"><div><div class="hd">${d}（${dowOf(d)}）</div><div class="hsub">${sub}</div></div><button class="go" data-go="${d}">開く</button></div><div class="hxwrap">${rows}</div></div>`;
+      const openBtn = sessions[d] ? `<button class="go" data-go="${d}">開く</button>` : '';
+      return `<div class="histday"><div class="histitem"><div><div class="hd">${d}（${dowOf(d)}）</div><div class="hsub">${sub}</div></div>${openBtn}</div><div class="hxwrap">${rows}</div></div>`;
     }).filter(Boolean).join('');
     list.innerHTML = html || empty;
   } else {
