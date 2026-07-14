@@ -501,6 +501,56 @@ const MASTER = ['チェストプレス','ショルダープレス','サイドレ
   'ヒップスラスト','B-スタンス片脚ヒップスラスト','ルーマニアンDL','レッグプレス','レッグカール','ケーブルキックバック','グルートブリッジ','ヒップアブダクション',
   'パロフプレス','デッドバグ','プランク','アブドミナル','傾斜トレッドミル','スミス・ベントオーバーロー','プリチャーカール'];
 
+/* ===== 過去ログの焼き込み（SEED・log.md由来 2026-07-06〜07-14） =====
+   プライベートブラウズだとlocalStorageが毎回消えるため、履歴はこのSEEDから描画する。
+   localStorageに同じ日付の記録があればそちら優先（histAll のObject.assign順）。
+   運用：本人がジムで報告→COOがlog.mdへ記録→（週1で）ここへ追記して再デプロイ。 */
+const SEED = {
+  '2026-07-06': { date:'2026-07-06', day:'月', note:'レクチャー・初回実測（レッグプレスはスタッフ推定105kg＝70%1RM）', exercises:[
+    { name:'チェストプレス', sets:[{w:'25',r:'10'}], note:'1RM34の70%で実測' },
+    { name:'アブドミナル',   sets:[{w:'25',r:'10'}], note:'1RM35の70%で実測' }
+  ]},
+  '2026-07-07': { date:'2026-07-07', day:'火', note:'背中#1 広がり＋二頭・後肩。初日「効かない」＝ボリューム不足＋レスト長すぎ＋腕引き', exercises:[
+    { name:'ラットプルダウン', sets:[{w:'25',r:'12'},{w:'25',r:'12'},{w:'25',r:'12'}], note:'可動域浅・腕引き・鎖骨止まり→17.5〜20kgへ減量しフォーム習得へ' },
+    { name:'ワンハンド・ダンベルロー', sets:[{w:'6',r:''},{w:'4',r:''}], note:'6kgは腕に効き背中に入らず4kgへ減量' },
+    { name:'リアレイズ', sets:[{w:'4',r:'15'}], note:'ダンベル' },
+    { name:'ダンベルカール', sets:[{w:'5',r:'10'},{w:'4',r:'10'},{w:'3',r:'15'}], note:'' }
+  ]},
+  '2026-07-08': { date:'2026-07-08', day:'水', note:'下半身A お尻・もも裏（重）。脚は追い込めた', exercises:[
+    { name:'ヒップスラスト', sets:[{w:'5',r:'15'},{w:'5',r:'15'},{w:'5',r:'15'},{w:'5',r:'15'}], note:'空バー＋両側5kgずつ（10回目からキツい）。※両側表記' },
+    { name:'ルーマニアンDL', sets:[{w:'0',r:'10'},{w:'0',r:'10'},{w:'0',r:'10'}], note:'計10kg×7でアウト→空バー(0kg)×10×3・フォーム最優先' },
+    { name:'レッグプレス', sets:[{w:'80',r:'12'},{w:'90',r:'15'},{w:'90',r:'15'},{w:'90',r:'15'},{w:'100',r:'15'}], note:'90〜100で15回＝レップ余裕（浅ROM＝数字インフレ）' },
+    { name:'ヒップアブダクション', sets:[{w:'18',r:'20'},{w:'23',r:''},{w:'27',r:'3'}], note:'W-up18×20／締め23kg軸・27kgは3回止まり＝漸増目標' }
+  ]},
+  '2026-07-09': { date:'2026-07-09', day:'木', note:'背中#2 厚み＋後肩。効かせる感覚が出てきた', exercises:[
+    { name:'ワンハンド・ダンベルロー', sets:[{w:'4',r:'15'},{w:'4',r:'15'},{w:'4',r:'15'},{w:'4',r:'15'},{w:'5',r:'15'},{w:'5',r:'12'}], note:'4kgは軽い→5kgで適正圏（最後5kg×12ギリ）' },
+    { name:'ラットプルダウン(ワイド)', sets:[{w:'25',r:'12'},{w:'25',r:'12'},{w:'30',r:'12'}], note:'フィックスド機・30kgは+2回余力＝ちょうど良い' },
+    { name:'リアレイズ', sets:[{w:'15',r:'12'},{w:'15',r:'12'},{w:'15',r:'11'},{w:'10',r:'15'}], note:'リアデルトマシン初使用・縦握り' },
+    { name:'サイドレイズ', sets:[{w:'4',r:'15'},{w:'2',r:'15'},{w:'2',r:'16'}], note:'コメントでは3kgスローネガティブが一番効いた（ログ数値と食い違い→次回3kg確認）' },
+    { name:'アブドミナル', sets:[{w:'25',r:'15'},{w:'25',r:'15'},{w:'25',r:'15'}], note:'ラスト5回フォーム崩れ→次回は10〜12でフォーム崩壊前に止める' }
+  ]},
+  '2026-07-12': { date:'2026-07-12', day:'土', note:'下半身B 振替＠宮前平（別ブランド機）。前日3万歩で前もも筋肉痛→一部2セットに微減。店舗横断で重量比較しない', exercises:[
+    { name:'B-スタンス片脚ヒップスラスト', sets:[{w:'5',r:'12'},{w:'5',r:'12'},{w:'10',r:'12'},{w:'15',r:'9'}], note:'両足実施＝通常の両脚ヒップスラスト（片脚基準にならず）。次回は宮崎台で本来の片脚（弱い左から）' },
+    { name:'レッグカール', sets:[{w:'32',r:'12'},{w:'32',r:'10'},{w:'32',r:'12'}], note:'腰浮き代償込み＝実力値でない・宮前平' },
+    { name:'ケーブルキックバック', sets:[{w:'5',r:'10',side:'R'},{w:'10',r:'10',side:'R'},{w:'10',r:'10',side:'R'},{w:'10',r:'10',side:'L'},{w:'5',r:'20',side:'L'}], note:'全然効かない＝重量でなく収縮フォーム（頂点でお尻を締める）' },
+    { name:'ヒップアブダクション', sets:[{w:'23',r:'12'},{w:'23',r:'15'},{w:'23',r:'20'}], note:'20回まで伸びた＝RIR余り＝漸増サイン' },
+    { name:'プランク', sets:[{w:'',r:'45'},{w:'',r:'45'}], note:'秒・2回目は左右に揺らす。余裕あり' },
+    { name:'アングルド片脚レッグプレス（宮前平）', sets:[{w:'20',r:'10'},{w:'35',r:'8'},{w:'35',r:'10'}], note:'片足・宮前平限定機・計画外・可動域浅め。宮崎台には無い' }
+  ]},
+  '2026-07-13': { date:'2026-07-13', day:'月', note:'上半身プッシュ（昼40分圧縮・POWER30なし・三頭カット）。最終セットRIR0〜1で追い込み', exercises:[
+    { name:'チェストプレス', sets:[{w:'23',r:'10'},{w:'18',r:'12'},{w:'18',r:'10'},{w:'14',r:'11'}], note:'23kgはRIR0（7回で一度止まる）→working18kgへ。7-06の25kgは非再現' },
+    { name:'ショルダープレス', sets:[{w:'10',r:'9'},{w:'5',r:'12'},{w:'10',r:'12'}], note:'初実測・5kgはW-up・working10kg×10〜12で確定' },
+    { name:'サイドレイズ', sets:[{w:'3',r:'12'},{w:'3',r:'15'},{w:'2',r:'15'}], note:'2kgでゆっくり下ろすと相当きつい・フォーム保てる' }
+  ]},
+  '2026-07-14': { date:'2026-07-14', day:'水', note:'下半身A（火曜へ前倒し）。中断ルール非該当（重量は横ばい〜上昇）', exercises:[
+    { name:'ヒップスラスト', sets:[{w:'10',r:'12'},{w:'15',r:'12'},{w:'15',r:'12'},{w:'15',r:'12'}], note:'片側表記。15kgはギリだが"逃げるフォーム"→フォーム目的で片側10kgへ自主デロード予定' },
+    { name:'レッグプレス', sets:[{w:'80',r:'12'},{w:'100',r:'12'},{w:'100',r:'10'},{w:'90',r:'12'}], note:'シートを近づけ深ROMにした3set目から急に効いた＝可動域が効きを決める' },
+    { name:'ルーマニアンDL', sets:[{w:'0',r:'10'},{w:'0',r:'10'},{w:'5',r:'10'}], note:'空バー(0kg)→+5kg・ヒンジ維持で微増' },
+    { name:'レッグカール', sets:[{w:'30',r:'10'},{w:'30',r:'10'},{w:'30',r:'11'}], note:'30でフォームちょい怪しい→キープ（宮前平32は店舗横断差で比較せず）' },
+    { name:'ヒップアブダクション', sets:[{w:'27',r:'15'},{w:'23',r:'15'},{w:'27',r:'8'}], note:'working23kg軸・27kgは股関節が外れる感覚（骨盤の逃げ疑い）' }
+  ]}
+};
+
 /* ===== 状態 ===== */
 const KEY = 'gymlog_sessions_v1';
 let sessions = load();
@@ -519,6 +569,9 @@ function save(){
 }
 function todayStr(){ const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
 function dowOf(dateStr){ return DOW[new Date(dateStr+'T00:00:00').getDay()]; }
+/* 履歴・前回値の参照用：焼き込み(SEED)＋localStorageの入力を合成（同じ日付は入力を優先）。
+   プライベートブラウズでlocalStorageが空でも、SEEDから過去が出る。保存(save/load)には混ぜない＝SEEDはlocalStorageに書き込まれない */
+function histAll(){ return Object.assign({}, SEED, sessions); }
 
 function newSession(date){
   const ov = DATE_OVERRIDES[date];
@@ -528,7 +581,8 @@ function newSession(date){
 }
 function loadSession(date){
   curDate = date;
-  cur = sessions[date] ? JSON.parse(JSON.stringify(sessions[date])) : newSession(date);
+  const src = sessions[date] || SEED[date];
+  cur = src ? JSON.parse(JSON.stringify(src)) : newSession(date);
   document.getElementById('date').value = date;
   document.getElementById('snote').value = cur.note;
   renderMenu();
@@ -537,9 +591,10 @@ function loadSession(date){
 
 /* 直近の同名種目の記録（前回値） */
 function prevOf(name){
-  const dates = Object.keys(sessions).filter(d=> d < curDate).sort().reverse();
+  const all = histAll();
+  const dates = Object.keys(all).filter(d=> d < curDate).sort().reverse();
   for(const d of dates){
-    const s = sessions[d];
+    const s = all[d];
     const ex = s.exercises.find(e=> e.name===name);
     if(ex){
       const done = ex.sets.filter(st=> String(st.w).trim()!=='' || String(st.r).trim()!=='');
@@ -847,12 +902,13 @@ document.getElementById('addChips').addEventListener('click', e=>{
 let histMode = 'date';
 function renderHist(){
   const list = document.getElementById('histList');
-  const dates = Object.keys(sessions).sort().reverse();
+  const data = histAll();
+  const dates = Object.keys(data).sort().reverse();
   const empty = `<div class="empty">まだ記録がありません。<br>重量・回数・メモをどれか1つ入力すると<br>その日が自動でここに載ります。</div>`;
   if(!dates.length){ list.innerHTML = empty; return; }
   if(histMode==='date'){
     const html = dates.map(d=>{
-      const s = sessions[d];
+      const s = data[d];
       const label = DAYS[s.day]?.label || '';
       const sub = label.split('・').slice(1).join('・') || '—';
       const rows = s.exercises.map(ex=>{
@@ -866,7 +922,7 @@ function renderHist(){
   } else {
     const map = new Map(), order = [];
     dates.forEach(d=>{
-      sessions[d].exercises.forEach(ex=>{
+      data[d].exercises.forEach(ex=>{
         const body = summarize(ex.sets);
         if(!body) return;
         if(!map.has(ex.name)){ map.set(ex.name, []); order.push(ex.name); }
