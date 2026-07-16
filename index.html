@@ -2,10 +2,16 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<!-- ホーム画面アイコンからもSafariで開く（別アプリ化しない＝データを1箇所に統一） -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<!-- PWA（ホーム画面アプリ）対応：2026-07-17 pwa_design_2026-07-17.md 参照。
+     SWなしの最小構成＝キャッシュ層を持たない（更新は最大10分で反映）。
+     Safari UI起因のキーボード描画バグ回避のため standalone 化。 -->
 <meta name="apple-mobile-web-app-title" content="ジム記録">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0d1117">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
 <title>ジム記録</title>
 <style>
   :root{
@@ -210,6 +216,9 @@
   .hexn .trend.up{ color:var(--ok); } .hexn .trend.flat{ color:var(--sub); } .hexn .trend.down{ color:var(--warn); }
   .histexport{ width:100%; border:1px solid var(--line2); background:var(--card2); color:var(--accent); font-weight:700; border-radius:12px; padding:12px; font-size:var(--fs-cap); margin:0 0 14px; min-height:46px; letter-spacing:.02em; }
   .histexport:active{ background:var(--accent-dim); }
+  .verrow{ display:flex; align-items:center; justify-content:space-between; margin-top:14px; padding-top:12px; border-top:1px solid var(--line); font-size:var(--fs-cap); color:var(--sub); }
+  .verrow button{ border:1px solid var(--line2); background:var(--card2); color:var(--accent); font-weight:700; border-radius:10px; padding:9px 14px; font-size:var(--fs-cap); min-height:40px; }
+  .verrow button:active{ background:var(--accent-dim); }
   .hxwrap{ display:flex; flex-direction:column; gap:6px; padding:2px 2px 0; }
   .hx{ display:flex; align-items:baseline; gap:10px; font-size:var(--fs-cap); line-height:1.4; }
   .hx .hxn{ color:var(--sub); min-width:8.5em; flex:none; }
@@ -296,6 +305,10 @@
     </div>
     <button class="histexport" id="histExport">⤓ 全記録をコピー（log.md書式・バックアップ用）</button>
     <div id="histList"></div>
+    <div class="verrow">
+      <span>バージョン <span id="verLabel"></span></span>
+      <button id="reloadBtn" type="button">↻ 最新版に更新</button>
+    </div>
   </div>
 </div>
 
@@ -526,7 +539,7 @@ const MASTER = ['チェストプレス','ショルダープレス','サイドレ
   'ヒップスラスト','B-スタンス片脚ヒップスラスト','ルーマニアンDL','レッグプレス','レッグカール','ケーブルキックバック','グルートブリッジ','ヒップアブダクション',
   'パロフプレス','デッドバグ','プランク','アブドミナル','傾斜トレッドミル','スミス・ベントオーバーロー','プリチャーカール'];
 
-/* ===== 過去ログの焼き込み（SEED・log.md由来 2026-07-06〜07-14） =====
+/* ===== 過去ログの焼き込み（SEED・log.md由来 2026-07-06〜07-16） =====
    プライベートブラウズだとlocalStorageが毎回消えるため、履歴はこのSEEDから描画する。
    localStorageに同じ日付の記録があればそちら優先（histAll のObject.assign順）。
    運用：本人がジムで報告→COOがlog.mdへ記録→（週1で）ここへ追記して再デプロイ。 */
@@ -590,6 +603,15 @@ const SEED = {
     { name:'プランク', sets:[], note:'差し替え：Pamela Reif 腹筋10分（ビデオ追い・かなりキツい）。屈曲系中心＝変化枠。腰を床に押し付けられない種目はスキップ' }
   ]}
 };
+
+/* ===== バージョン（デプロイのたびに更新）＋最新版取得 =====
+   SWなし運用のため通常はHTTPキャッシュ（GitHub Pages 約10分）だけが古さの原因。
+   「最新版に更新」＝クエリ付き再読込でHTTPキャッシュを確実に飛ばす。localStorageは無関係（消えない） */
+const APP_VER = '2026-07-17';
+document.getElementById('verLabel').textContent = APP_VER;
+document.getElementById('reloadBtn').addEventListener('click', ()=>{
+  location.replace(location.pathname + '?r=' + Date.now());
+});
 
 /* ===== 状態 ===== */
 const KEY = 'gymlog_sessions_v1';
