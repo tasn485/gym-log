@@ -12,18 +12,26 @@
     --bg:#0d1117; --card:#161b22; --card2:#1c242e;
     --line:rgba(255,255,255,.07); --line2:rgba(255,255,255,.15);
     --ink:#eef4fa; --sub:#a3b1bf;
-    --accent:#2dd4bf; --accent-dim:rgba(45,212,191,.13);
+    --accent:#2dd4bf; --accent-dim:rgba(45,212,191,.13); --accent-2:#0e9488;
+    --accent-grad:linear-gradient(135deg,#37e0cd 0%,#0e9488 100%);
     --ok:#34d399; --warn:#fbbf24; --ng:#f87171;
     --sheet:#141b23; --footbg:rgba(13,17,23,.88); --sil:#223041;
-    --fs-title:1.08rem; --fs-num:1.35rem; --fs-body:.95rem; --fs-cap:.8rem;
+    --card-grad:linear-gradient(180deg,rgba(255,255,255,.028),rgba(255,255,255,0));
+    --shadow:0 1px 2px rgba(0,0,0,.28),0 10px 28px rgba(0,0,0,.16);
+    --shadow-accent:0 6px 18px rgba(45,212,191,.32);
+    --fs-title:1.08rem; --fs-num:1.5rem; --fs-body:.95rem; --fs-cap:.8rem;
     color-scheme:dark;
   }
   body.light{
     --bg:#eef1f5; --card:#ffffff; --card2:#f2f5f8;
     --line:rgba(15,30,45,.10); --line2:rgba(15,30,45,.22);
     --ink:#18222d; --sub:#586a79;
-    --accent:#0e9488; --accent-dim:rgba(14,148,136,.10);
+    --accent:#0e9488; --accent-dim:rgba(14,148,136,.10); --accent-2:#0b7a70;
+    --accent-grad:linear-gradient(135deg,#12a99b 0%,#0b7a70 100%);
     --sheet:#ffffff; --footbg:rgba(255,255,255,.92); --sil:#cdd7e0;
+    --card-grad:linear-gradient(180deg,rgba(15,30,45,.015),rgba(15,30,45,0));
+    --shadow:0 1px 2px rgba(15,30,45,.08),0 10px 26px rgba(15,30,45,.07);
+    --shadow-accent:0 6px 16px rgba(14,148,136,.26);
     color-scheme:light;
   }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
@@ -51,10 +59,20 @@
   input[type=date]::-webkit-date-and-time-value{ text-align:center; }
   select#menu{ width:100%; font-size:.95rem; height:48px; padding:0 42px 0 14px; border-radius:12px; border:1px solid var(--line2); background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%238b98a5' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 16px center; color:var(--ink); font-weight:600; appearance:none; -webkit-appearance:none; font-family:inherit; }
 
-  /* 今日の狙い（テキストブロック・箱なし） */
-  .banner{ margin:0 0 18px; padding:0 2px; font-size:var(--fs-body); font-weight:600; line-height:1.6; }
+  /* 今日の狙い（テキストブロック・箱なし）＋進捗リング */
+  .banner{ margin:0 0 18px; padding:0 2px; font-size:var(--fs-body); font-weight:600; line-height:1.6; display:flex; align-items:flex-start; gap:14px; }
+  .banner .bnr-txt{ flex:1; min-width:0; }
   .banner .t{ display:block; font-size:var(--fs-cap); font-weight:700; color:var(--accent); letter-spacing:.08em; margin-bottom:3px; }
   .banner .sub{ display:block; margin-top:3px; font-size:var(--fs-cap); color:var(--sub); font-weight:500; }
+
+  /* 進捗リング（完了セット/総セット） */
+  .pring{ position:relative; width:54px; height:54px; flex:none; display:flex; align-items:center; justify-content:center; }
+  .pring svg{ position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg); }
+  .pring-bg{ fill:none; stroke:var(--line2); stroke-width:3.4; opacity:.55; }
+  .pring-fg{ fill:none; stroke:var(--accent); stroke-width:3.4; stroke-linecap:round; transition:stroke-dashoffset .45s cubic-bezier(.4,0,.2,1); filter:drop-shadow(0 0 3px var(--accent-dim)); }
+  .pring.full .pring-fg{ stroke:var(--ok); }
+  .pring-n{ position:relative; font-size:.74rem; font-weight:800; color:var(--sub); font-variant-numeric:tabular-nums; letter-spacing:-.02em; }
+  .pring.full .pring-n{ color:var(--ok); }
 
   /* ウォームアップ/クールダウン（罫線区切りの行） */
   .acc{ border-top:1px solid var(--line); border-bottom:1px solid var(--line); margin:0 0 16px; }
@@ -73,9 +91,9 @@
   .acc[open]>summary::before, details.cue[open]>summary::before{ transform:rotate(45deg); }
 
   /* exercise cards */
-  .ex{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:16px 16px 14px; margin:0 0 14px; box-shadow:inset 0 1px 0 rgba(255,255,255,.04); }
+  .ex{ background:var(--card); background-image:var(--card-grad); border:1px solid var(--line); border-radius:16px; padding:16px 16px 14px; margin:0 0 14px; box-shadow:var(--shadow),inset 0 1px 0 rgba(255,255,255,.04); }
   .ex-head{ display:flex; align-items:center; gap:10px; margin-bottom:6px; }
-  .ex-order{ display:inline-flex; align-items:center; justify-content:center; min-width:24px; height:24px; border-radius:8px; background:var(--accent-dim); color:var(--accent); font-size:var(--fs-cap); font-weight:700; flex:none; }
+  .ex-order{ display:inline-flex; align-items:center; justify-content:center; min-width:25px; height:25px; border-radius:9px; background:var(--accent-grad); color:#052e28; font-size:var(--fs-cap); font-weight:800; flex:none; box-shadow:var(--shadow-accent); }
   .ex-name{ font-weight:700; font-size:var(--fs-title); flex:1; min-width:0; line-height:1.35; }
   .ex-name small{ font-weight:500; color:var(--sub); font-size:var(--fs-cap); margin-left:6px; white-space:nowrap; }
   .ex-del{ border:none; background:none; color:var(--sub); font-size:var(--fs-cap); padding:10px 2px 10px 12px; flex:none; opacity:.75; }
@@ -100,8 +118,9 @@
 
   /* 記録（数字が主役） */
   .setrow{ display:flex; align-items:center; gap:8px; margin:12px 0; }
-  .setno{ width:30px; height:30px; border-radius:50%; border:1px solid var(--line2); background:none; display:flex; align-items:center; justify-content:center; color:var(--sub); font-size:var(--fs-cap); font-weight:700; flex:none; padding:0; }
-  .setrow.done .setno{ background:var(--accent); border-color:var(--accent); color:#052e28; }
+  .setno{ width:30px; height:30px; border-radius:50%; border:1px solid var(--line2); background:none; display:flex; align-items:center; justify-content:center; color:var(--sub); font-size:var(--fs-cap); font-weight:700; flex:none; padding:0; transition:transform .15s ease; }
+  .setrow.done .setno{ background:var(--accent-grad); border-color:transparent; color:#052e28; box-shadow:var(--shadow-accent); animation:pop .22s ease-out; }
+  @keyframes pop{ 0%{ transform:scale(.72); } 60%{ transform:scale(1.12); } 100%{ transform:scale(1); } }
   .setrow.done .field input{ opacity:.4; }
   .setrow.done .times,.setrow.done .u{ opacity:.35; }
   .lr{ width:36px; height:36px; border-radius:10px; border:1px solid var(--line2); background:none; color:var(--sub); font-size:var(--fs-cap); font-weight:700; flex:none; padding:0; }
@@ -154,7 +173,7 @@
   footer{ position:fixed; left:0; right:0; bottom:0; background:var(--footbg); -webkit-backdrop-filter:blur(14px); backdrop-filter:blur(14px); border-top:1px solid var(--line); padding:10px 0 calc(10px + env(safe-area-inset-bottom)); z-index:40; }
   footer .wrap{ display:flex; gap:10px; }
   .btn{ flex:1; border:none; border-radius:13px; padding:15px 8px; font-size:.95rem; font-weight:700; min-height:52px; }
-  .btn.copy{ background:var(--accent); color:#052e28; flex:1.6; }
+  .btn.copy{ background:var(--accent-grad); color:#052e28; flex:1.6; box-shadow:var(--shadow-accent); letter-spacing:.02em; }
   .btn.copy:active{ opacity:.85; }
   .btn.hist{ background:var(--card2); color:var(--ink); border:1px solid var(--line2); }
   .btn.timer{ background:var(--card2); color:var(--ink); border:1px solid var(--line2); font-variant-numeric:tabular-nums; white-space:nowrap; padding:15px 4px; }
@@ -185,7 +204,12 @@
   .histday{ padding:6px 0 14px; border-bottom:1px solid var(--line); margin-bottom:6px; }
   .histday .histitem{ border-bottom:none; padding-bottom:6px; }
   .histex{ padding:4px 0 14px; border-bottom:1px solid var(--line); margin-bottom:8px; }
-  .hexn{ font-weight:700; font-size:var(--fs-body); margin:2px 2px 9px; }
+  .hexn{ font-weight:700; font-size:var(--fs-body); margin:2px 2px 9px; display:flex; align-items:center; gap:10px; }
+  .hexn .spark{ width:70px; height:22px; margin-left:auto; flex:none; }
+  .hexn .trend{ font-size:var(--fs-cap); font-weight:700; flex:none; font-variant-numeric:tabular-nums; }
+  .hexn .trend.up{ color:var(--ok); } .hexn .trend.flat{ color:var(--sub); } .hexn .trend.down{ color:var(--warn); }
+  .histexport{ width:100%; border:1px solid var(--line2); background:var(--card2); color:var(--accent); font-weight:700; border-radius:12px; padding:12px; font-size:var(--fs-cap); margin:0 0 14px; min-height:46px; letter-spacing:.02em; }
+  .histexport:active{ background:var(--accent-dim); }
   .hxwrap{ display:flex; flex-direction:column; gap:6px; padding:2px 2px 0; }
   .hx{ display:flex; align-items:baseline; gap:10px; font-size:var(--fs-cap); line-height:1.4; }
   .hx .hxn{ color:var(--sub); min-width:8.5em; flex:none; }
@@ -270,6 +294,7 @@
       <button class="histtab on" data-mode="date">日付順</button>
       <button class="histtab" data-mode="ex">種目別（マシン）</button>
     </div>
+    <button class="histexport" id="histExport">⤓ 全記録をコピー（log.md書式・バックアップ用）</button>
     <div id="histList"></div>
   </div>
 </div>
@@ -385,7 +410,7 @@ const DAYS = {
     exA:['ヒップスラスト','ルーマニアンDL','レッグプレス','レッグカール','ヒップアブダクション'] },
   '木':{ label:'木・背中プル#2 厚み＋体幹', target:'背中（厚み）・後肩・体幹（抗回旋）', session:'有酸素は任意（傾斜歩行10〜15分）／所要 50〜60分',
     exA:['ワンハンド・ダンベルロー','ラットプルダウン(ワイド)','リアレイズ','サイドレイズ','パロフプレス'],
-    exB:['ワンハンド・ダンベルロー','ラットプルダウン(ワイド)','リアレイズ','サイドレイズ','アブドミナル'] },
+    exB:['ワンハンド・ダンベルロー','ラットプルダウン(ワイド)','リアレイズ','サイドレイズ','パロフプレス'] },
   '金':{ label:'金・休館（完全休養）', target:'ジム休館＝完全休養（睡眠7〜9h死守・休養日カロリー1,300〜1,350）', session:'', exA:[] },
   '土':{ label:'土・下半身B お尻の質・密度重視＋体幹', target:'大殿筋（両足で漸増）・ハム・中臀筋・体幹（抗伸展）・左右差はキックバックで担保', session:'朝 カラダほぐすYOGA45 10:05 or 美姿勢ワークアウト 11:10／所要 筋トレ55〜65分。レスト60秒厳守（ヒップスラストのみ90〜120）',
     exA:['ヒップスラスト','レッグカール','ケーブルキックバック','ヒップアブダクション','グルートブリッジ','プランク'] },
@@ -437,7 +462,7 @@ const META = {
     cues:['strict（反動を使わない）','腕は弱点＝丁寧に'], alt:'プリチャーカール台も可', prog:'楽になったら+1〜2kg' },
   'ヒップアブダクション':{ gear:'アウターサイ・マシン', muscle:'中臀筋', weight:'working23kg／締め27kg（20回できたので格上げ）', wlabel:'<span class="dot g"></span>', setrep:'working15×2＋締め27kg×6-8', rest:'60秒',
     cues:['上体を少し前傾させると狙いの中臀筋に乗る（直立/後傾は大臀筋寄り）','X脚の中臀筋を強化','「開いた位置からさらに開く」刻みより通常フルレンジ＋頂点1秒キープが効く'], prog:'23kg×20回できた＝締め27kg×6→8へ橋渡し' },
-  'ヒップスラスト':{ gear:'スミス＋ベンチ', muscle:'大殿筋', weight:'両側10kgずつ（フォーム目的の自主デロード・骨盤後傾ロックを2〜4週固める）', wlabel:'<span class="dot y"></span>', setrep:'水3〜4×8-12／土4×10-12（頂点2秒キープ）', rest:'90〜120秒',
+  'ヒップスラスト':{ gear:'スミス＋ベンチ', muscle:'大殿筋', weight:'両側10kgずつ（フォーム目的の自主デロード・骨盤後傾ロックを2〜4週固める）', wlabel:'<span class="dot y"></span>', setrep:'水3〜4×8-12／土4×10-12（頂点2秒キープ）', rest:'90〜120秒', progLock:true,
     cues:['フルROMで下げる','頂点で骨盤を後傾させてお尻をロック（土曜は2秒キープの収縮重視で水曜と差別化）','腰を反らせない（反り腰の矯正にもなる）','反動を使わない','土曜（収縮重視）は軽めから始めるかは本人裁量'], prog:'片側15kgは"逃げるフォーム"→両側10kgずつでフォーム固め後、骨盤後傾ロックが崩れない範囲で漸増' },
   'ルーマニアンDL':{ gear:'ダンベル/スミス', muscle:'ハムストリング・大殿筋', weight:'空バー〜+5kg', wlabel:'<span class="dot y"></span>', setrep:'3×8-10', rest:'90〜120秒', progLock:true,
     cues:['尻を後ろへ引く（ヒンジ）','膝は軽く曲げて固定・伸ばしきらない','背中はまっすぐ','もも裏が伸びて背が丸まる直前で止める'], prog:'フォームが安定するまで重量は増やさない' },
@@ -447,7 +472,7 @@ const META = {
     cues:['骨盤・恥骨をパッドに押し付け腹圧で腰の反りを消す（腰が浮く＝腰で代償・効かない原因）','もも裏で膝を曲げる（主働＝ハムストリング。前もも・腰に不関与）','下ろし3秒・反動なし','膝の回転軸をマシンの軸に合わせる','腰を反らせずハムだけで曲げられて初めて漸増'], alt:'うつ伏せ型でもOK（フルレンジ＋下ろし3秒）', prog:'腰が浮かず30kg×10-12がクリーンに安定して初めて32kg（宮前平32は代償込みで実力値でない）' },
   'ケーブルキックバック':{ gear:'ケーブル', muscle:'大殿筋・中臀筋', weight:'左右各10kg', wlabel:'<span class="dot y"></span>', setrep:'3×12-15（左右各）', rest:'60秒', uni:true,
     cues:['頂点で1秒お尻を締める（効かない主因は重量でなく収縮＝ここを締める）','支持脚の膝を軽く曲げ骨盤を固定・上体やや前傾','腰を反って高く上げない（高さでなくお尻の収縮で止める）','効かないうちは重量を上げず収縮を先に（5kgは軽すぎ・10kg基準）'] },
-  'プランク':{ gear:'自重', muscle:'体幹（抗伸展）', weight:'自重', wlabel:'<span class="dot g"></span>', setrep:'2〜3×60秒（秒で記録）', rest:'60秒',
+  'プランク':{ gear:'自重', muscle:'体幹（抗伸展）', weight:'自重', wlabel:'<span class="dot g"></span>', setrep:'2〜3×60秒（秒で記録）', rest:'60秒', progLock:true,
     cues:['お尻を締めて骨盤を後傾','腰を反らせない','時間延長より強度アップが効率的（60秒超は惰性）＝慣れたらRKC（全身を締める）・片手/片脚を浮かせる','デッドバグ削除に伴い抗伸展体幹の主役'] },
   'フレンチプレス':{ gear:'ダンベル', muscle:'上腕三頭筋（長頭）', weight:'4kg', wlabel:'<span class="dot g"></span>', setrep:'3×12-15', rest:'60秒',
     cues:['座位で肋骨を締め反り腰にしない','肘を天井に固定・外に開かない','肘から先だけ深く下ろす（二の腕裏の最大部がストレッチされて効く）'], alt:'ケーブル・プレスダウン', prog:'4kg×15がクリーンに揃ったら5kg（定位置は月曜プッシュA週）' },
@@ -461,9 +486,9 @@ const META = {
     cues:['★片脚ずつ（両足でやると通常ヒップスラストになり左右差矯正にならない）','弱い側（左）から・左右同数（重心右偏りの矯正）','頂点でお尻を締め骨盤後傾ロック','腰を反らせない','前もも・膝に負荷ほぼゼロ（ブルガリアンの代替）'] },
   'パロフプレス':{ gear:'ケーブル', muscle:'腹斜筋・体幹（抗回旋）', weight:'初回実測', wlabel:'<span class="dot r"></span>', setrep:'3×10-12（左右各）', rest:'60秒', uni:true,
     cues:['胸の前で真っ直ぐ押し出す','体をひねらせない（ひねりに耐える）','反り腰にしない'] },
-  'デッドバグ':{ gear:'自重', muscle:'体幹（抗伸展）', weight:'自重', wlabel:'<span class="dot y"></span>', setrep:'2×10（左右交互）', rest:'60秒',
+  'デッドバグ':{ gear:'自重', muscle:'体幹（抗伸展）', weight:'自重', wlabel:'<span class="dot y"></span>', setrep:'2×10（左右交互）', rest:'60秒', progLock:true,
     cues:['腰を床に押し付けたまま対角の手足を伸ばす','腰が浮くなら可動域を狭く','反り腰の逆を学習する種目'] },
-  'グルートブリッジ':{ gear:'バンド/自重', muscle:'大殿筋', weight:'自重＋バンド', wlabel:'<span class="dot y"></span>', setrep:'焼き切り 20-25×1-2（追い込み）', rest:'60秒',
+  'グルートブリッジ':{ gear:'バンド/自重', muscle:'大殿筋', weight:'自重＋バンド', wlabel:'<span class="dot y"></span>', setrep:'焼き切り 20-25×1-2（追い込み）', rest:'60秒', progLock:true,
     cues:['土曜の焼き切りフィニッシャー＝ノンストップで20-25回','頂点で1秒お尻を締める','腰を反らせない','§9の疲労/重量2週連続低下が出たらこの種目から先に外す'] }
 };
 
@@ -639,8 +664,11 @@ function sizeNotes(){
 function renderTop(){
   const d = DAYS[cur.day] || {};
   const isRest = !dayEx(cur.day, curDate).length;
+  let doneSets=0, totalSets=0;
+  cur.exercises.forEach(ex=> ex.sets.forEach(st=>{ totalSets++; if(st.d) doneSets++; }));
+  const ring = (!isRest && totalSets) ? progressRing(doneSets, totalSets) : '';
   document.getElementById('banner').innerHTML = d.target
-    ? `<div class="banner"><span class="t">今日の狙い（${weekType(curDate)}週）</span>${escHtml(d.target)}${d.session?`<span class="sub">${escHtml(d.session)}</span>`:''}</div>`
+    ? `<div class="banner"><div class="bnr-txt"><span class="t">今日の狙い（${weekType(curDate)}週）</span>${escHtml(d.target)}${d.session?`<span class="sub">${escHtml(d.session)}</span>`:''}</div>${ring}</div>`
     : '';
   const wc = document.getElementById('warmup');
   const cc = document.getElementById('cooldown');
@@ -650,6 +678,16 @@ function renderTop(){
 }
 function accBlock(title, items){
   return `<details class="acc"><summary>${escHtml(title)}</summary><div class="body"><ul>${items.map(x=>`<li>${escHtml(x)}</li>`).join('')}</ul></div></details>`;
+}
+/* 進捗リング（完了セット/総セット・SVG） */
+function progressRing(done, total){
+  const r=17, c=2*Math.PI*r, pct = total ? done/total : 0;
+  const off = c*(1-pct);
+  const full = total>0 && done===total;
+  return `<div class="pring${full?' full':''}" aria-label="完了 ${done}/${total} セット">`+
+    `<svg viewBox="0 0 40 40"><circle class="pring-bg" cx="20" cy="20" r="${r}"></circle>`+
+    `<circle class="pring-fg" cx="20" cy="20" r="${r}" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"></circle></svg>`+
+    `<span class="pring-n">${done}/${total}</span></div>`;
 }
 
 /* 漸増サジェスト：前回の全セットが上限レップに達していたら候補を出す（アプリ内計算＝Claude不要）
@@ -899,6 +937,31 @@ document.getElementById('addChips').addEventListener('click', e=>{
   window.scrollTo({ top:document.body.scrollHeight, behavior:'smooth' });
 });
 
+/* 種目別の重量推移スパークライン（数字が主役のミニ折れ線） */
+function topWeight(sets){
+  const ws = sets.map(st=> parseFloat(st.w)).filter(v=> !isNaN(v));
+  return ws.length ? Math.max(...ws) : null;
+}
+function sparkline(points){        // points: [{d,w}] を時系列（古→新）で
+  if(points.length < 2) return '';
+  const ws = points.map(p=>p.w);
+  const min = Math.min(...ws), max = Math.max(...ws), span = (max-min) || 1;
+  const W=100, H=26, pad=3, step=(W-pad*2)/(points.length-1);
+  const co = points.map((p,i)=> [pad+i*step, H-pad-((p.w-min)/span)*(H-pad*2)]);
+  const dpath = co.map((c,i)=> `${i?'L':'M'}${c[0].toFixed(1)} ${c[1].toFixed(1)}`).join(' ');
+  const last = co[co.length-1];
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">`+
+    `<path d="${dpath}" fill="none" stroke="var(--accent)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>`+
+    `<circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="2.4" fill="var(--accent)"/></svg>`;
+}
+function trendTag(points){
+  if(points.length < 2) return '';
+  const a = points[0].w, b = points[points.length-1].w, diff = +(b-a).toFixed(1);
+  const cls = diff>0 ? 'up' : diff<0 ? 'down' : 'flat';
+  const sign = diff>0 ? '+' : '';
+  return `<span class="trend ${cls}">${diff===0?'±0':sign+diff}kg</span>`;
+}
+
 /* 履歴シート（日付順／種目別） */
 let histMode = 'date';
 function renderHist(){
@@ -922,8 +985,16 @@ function renderHist(){
     }).filter(Boolean).join('');
     list.innerHTML = html || empty;
   } else {
-    const map = new Map(), order = [];
-    dates.forEach(d=>{
+    const map = new Map(), order = [], series = new Map();
+    [...dates].reverse().forEach(d=>{           // 古→新でスパークライン用の重量列を作る
+      data[d].exercises.forEach(ex=>{
+        const w = topWeight(ex.sets);
+        if(w==null) return;
+        if(!series.has(ex.name)) series.set(ex.name, []);
+        series.get(ex.name).push({d, w});
+      });
+    });
+    dates.forEach(d=>{                          // 新→旧で明細行を作る
       data[d].exercises.forEach(ex=>{
         const body = summarize(ex.sets);
         if(!body) return;
@@ -932,7 +1003,10 @@ function renderHist(){
       });
     });
     list.innerHTML = order.length
-      ? order.map(name=> `<div class="histex"><div class="hexn">${escHtml(name)}</div><div class="hxwrap">${map.get(name).join('')}</div></div>`).join('')
+      ? order.map(name=>{
+          const pts = series.get(name) || [];
+          return `<div class="histex"><div class="hexn">${escHtml(name)}${trendTag(pts)}${sparkline(pts)}</div><div class="hxwrap">${map.get(name).join('')}</div></div>`;
+        }).join('')
       : empty;
   }
 }
@@ -955,17 +1029,28 @@ document.getElementById('histList').addEventListener('click', e=>{
   window.scrollTo({top:0});
 });
 
-/* コピー */
-document.getElementById('copyBtn').addEventListener('click', async ()=>{
-  save();
-  const text = buildText(cur);
+/* コピー（クリップボード失敗時はフォールバックのテキスト欄を出す） */
+async function copyText(text, okMsg){
   try{
     await navigator.clipboard.writeText(text);
-    toast('コピーしました → Claudeに貼り付け');
+    toast(okMsg || 'コピーしました');
   }catch(err){
     document.getElementById('fallback').value = text;
     document.getElementById('fbSheet').classList.add('on');
   }
+}
+document.getElementById('copyBtn').addEventListener('click', ()=>{
+  save();
+  copyText(buildText(cur), 'コピーしました → Claudeに貼り付け');
+});
+
+/* 全記録を一括書き出し（log.md書式・バックアップ／SEED転記用） */
+document.getElementById('histExport').addEventListener('click', ()=>{
+  const data = histAll();
+  const dates = Object.keys(data).sort();
+  if(!dates.length){ toast('まだ記録がありません'); return; }
+  const text = dates.map(d=> buildText(data[d])).join('\n\n');
+  copyText(text, `全${dates.length}日分をコピーしました`);
 });
 
 /* シート閉じる */
