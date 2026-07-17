@@ -413,7 +413,7 @@
    exA＝Week A／exB＝Week B（無い曜日は両週共通でexAを使う） ===== */
 const DOW = ['日','月','火','水','木','金','土'];
 const DAYS = {
-  '月':{ label:'月・上半身プッシュ', target:'胸・肩・三頭（夜は脚の有酸素）', session:'夜 MOVE BODY POWER30 21:15〜21:50／所要 筋トレ40〜50分＋レッスン30分',
+  '月':{ label:'月・上半身プッシュ', target:'胸・肩・三頭', session:'レッスン凍結中（2026-07-17）＝最終セットは常時RIR0〜1まで追い込みOK／所要 筋トレ40〜50分',
     exA:['チェストプレス','ショルダープレス','サイドレイズ','フレンチプレス'],
     exB:['チェストプレス','ショルダープレス','サイドレイズ','キックバック'] },
   '火':{ label:'火・背中プル#1 広がり＋三頭（二の腕裏）', target:'背中（広背筋・広がり）・後肩・三頭（二の腕裏）・中臀筋', session:'有酸素は任意（物足りなければ傾斜歩行10〜15分）／所要 50〜60分',
@@ -607,7 +607,7 @@ const SEED = {
 /* ===== バージョン（デプロイのたびに更新）＋最新版取得 =====
    SWなし運用のため通常はHTTPキャッシュ（GitHub Pages 約10分）だけが古さの原因。
    「最新版に更新」＝クエリ付き再読込でHTTPキャッシュを確実に飛ばす。localStorageは無関係（消えない） */
-const APP_VER = '2026-07-17';
+const APP_VER = '2026-07-17.2';
 document.getElementById('verLabel').textContent = APP_VER;
 document.getElementById('reloadBtn').addEventListener('click', ()=>{
   location.replace(location.pathname + '?r=' + Date.now());
