@@ -144,6 +144,9 @@
   .ex-note::placeholder,textarea#snote::placeholder{ color:var(--sub); opacity:.6; }
 
   .addex{ border:1px dashed var(--line2); background:none; color:var(--accent); font-weight:600; font-size:var(--fs-body); border-radius:16px; padding:15px; width:100%; margin:2px 0 16px; min-height:50px; }
+  .dayreset-wrap{ text-align:center; margin:2px 0 22px; }
+  .dayreset{ border:none; background:none; color:var(--sub); font-size:var(--fs-cap); text-decoration:underline; text-underline-offset:3px; padding:9px 12px; min-height:40px; }
+  .dayreset-hint{ display:block; color:var(--sub); font-size:var(--fs-cap); opacity:.7; margin-top:2px; line-height:1.5; }
   .snote-wrap{ margin:4px 0 20px; }
   .snote-wrap label{ font-size:var(--fs-cap); color:var(--sub); font-weight:600; display:block; margin-bottom:7px; }
   textarea#snote{ width:100%; min-height:72px; font-size:var(--fs-body); padding:12px; border:1px solid var(--line); border-radius:12px; resize:vertical; font-family:inherit; color:var(--ink); background:var(--card); }
@@ -276,6 +279,10 @@
     <label for="snote">今日のメモ（体調・気づき・任意）</label>
     <textarea id="snote" placeholder="例：背中に効く感覚が出た／膝は痛みなし"></textarea>
     <p class="autosave-note">入力は自動で保存されます（保存ボタンなし）。重量・回数・メモをどれか1つ入れると、その日が「履歴」に載ります。<span id="savedDot"></span></p>
+  </div>
+  <div class="dayreset-wrap">
+    <button class="dayreset" id="resetDay">この日のメニューを組み直す</button>
+    <span class="dayreset-hint">曜日振替のあとに前の種目が残ってしまったとき、正しい構成に戻します（この日の入力記録は消えます）</span>
   </div>
 </div>
 
@@ -607,7 +614,7 @@ const SEED = {
 /* ===== バージョン（デプロイのたびに更新）＋最新版取得 =====
    SWなし運用のため通常はHTTPキャッシュ（GitHub Pages 約10分）だけが古さの原因。
    「最新版に更新」＝クエリ付き再読込でHTTPキャッシュを確実に飛ばす。localStorageは無関係（消えない） */
-const APP_VER = '2026-07-17.2';
+const APP_VER = '2026-07-17.3';
 document.getElementById('verLabel').textContent = APP_VER;
 document.getElementById('reloadBtn').addEventListener('click', ()=>{
   location.replace(location.pathname + '?r=' + Date.now());
@@ -957,6 +964,24 @@ document.getElementById('addEx').addEventListener('click', ()=>{
     (todayEx.length? `<div class="grouplabel">${DAYS[dow].label} の種目</div><div class="chipgrid">${todayEx.map(chip).join('')}</div>`:'') +
     `<div class="grouplabel">その他の種目</div><div class="chipgrid">${others.map(chip).join('')}<button class="chip free" data-free>＋ 自由入力</button></div>`;
   addSheet.classList.add('on');
+});
+/* この日のメニューを組み直す：曜日振替後に古い種目が残った時、DATE_OVERRIDES/曜日プリセットの正しい構成へ戻す（記録は消える・元に戻す付き） */
+document.getElementById('resetDay').addEventListener('click', ()=>{
+  const label = (DAYS[cur.day] && DAYS[cur.day].label) ? DAYS[cur.day].label.split('・')[0] : cur.day;
+  if(!confirm(`${curDate}（${cur.day}）のメニューを「${label}」の正しい構成に組み直します。\nこの日に入力した重量・回数・メモは消えます。よろしいですか？`)) return;
+  const prev = sessions[curDate] ? JSON.parse(JSON.stringify(sessions[curDate])) : null;
+  delete sessions[curDate];
+  cur = newSession(curDate);
+  localStorage.setItem(KEY, JSON.stringify(sessions));
+  document.getElementById('snote').value = cur.note;
+  renderMenu(); render();
+  toast('メニューを組み直しました', '元に戻す', ()=>{
+    if(prev){ sessions[curDate] = prev; cur = JSON.parse(JSON.stringify(prev)); }
+    else { cur = newSession(curDate); }
+    localStorage.setItem(KEY, JSON.stringify(sessions));
+    document.getElementById('snote').value = cur.note;
+    renderMenu(); render();
+  });
 });
 function chip(n){ return `<button class="chip" data-add="${escAttr(n)}">${escHtml(n)}</button>`; }
 document.getElementById('addChips').addEventListener('click', e=>{
