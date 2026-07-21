@@ -662,7 +662,7 @@ const SEED = {
 /* ===== バージョン（デプロイのたびに更新）＋最新版取得 =====
    SWなし運用のため通常はHTTPキャッシュ（GitHub Pages 約10分）だけが古さの原因。
    「最新版に更新」＝クエリ付き再読込でHTTPキャッシュを確実に飛ばす。localStorageは無関係（消えない） */
-const APP_VER = '2026-07-22.1';
+const APP_VER = '2026-07-22.2';
 document.getElementById('verLabel').textContent = APP_VER;
 document.getElementById('reloadBtn').addEventListener('click', ()=>{
   location.replace(location.pathname + '?r=' + Date.now());
@@ -1298,13 +1298,15 @@ function renderGymTime(){
   gymEl.innerHTML = `<span class="gt-ico">🏋</span>`+
     `<div class="gt-main"><span class="gt-lead">ジム滞在時間</span>`+
     `<span class="gt-val">${st}<span class="arrow">→</span>${en}<span class="stay">　${fmtStay(stay)}</span></span></div>`+
-    `<button class="gt-clear wide" data-gt="clear">やり直す</button>`;
+    `<button class="gt-btn" data-gt="resume">▶ 再開</button>`+
+    `<button class="gt-clear wide" data-gt="clear">ゼロから</button>`;
 }
 gymEl.addEventListener('click', e=>{
   const b=e.target.closest('button[data-gt]'); if(!b) return;
   const a=b.dataset.gt;
   if(a==='start'){ cur.startAt=nowHM(); cur.endAt=''; save(); renderGymTime(); }
   else if(a==='stop'){ cur.endAt=nowHM(); save(); renderGymTime(); }
+  else if(a==='resume'){ delete cur.endAt; save(); renderGymTime(); }
   else if(a==='clear'){
     if(!confirm('ジム時間の記録をキャンセルしますか？\n開始時刻・経過はすべて消えて、次に開始するとゼロからやり直しになります。')) return;
     delete cur.startAt; delete cur.endAt; save(); renderGymTime();
