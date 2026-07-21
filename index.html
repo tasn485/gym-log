@@ -243,10 +243,9 @@
   .toast.act{ pointer-events:auto; }
   .toast .tact{ border:none; background:none; color:var(--bg); text-decoration:underline; font-weight:700; font-size:inherit; font-family:inherit; margin-left:10px; padding:6px 2px; }
 
-  /* iOSの数値キーパッドに閉じるキーが無い対策：フォーカス中だけ出る完了バー */
-  .kbbar{ position:fixed; left:0; top:0; width:100%; display:none; justify-content:flex-end; background:var(--sheet); border-top:1px solid var(--line2); border-bottom:1px solid var(--line); z-index:70; }
-  .kbbar.on{ display:flex; }
-  .kbbar button{ border:none; background:none; color:var(--accent); font-weight:700; font-size:.95rem; padding:11px 18px; min-height:44px; }
+  /* 入力中はフッターを隠す＝キーボードの上に浮いて中央がごちゃつくのを防ぐ。
+     数字キーパッドの「閉じる」はiOS標準のフォーム補助バー〈∧∨✓〉に任せる（独自の完了バーは廃止） */
+  body.kbon footer{ display:none; }
 
   /* 信頼度ドット（目安重量の確度：緑=確定/黄=推定/赤=要実測） */
   .dot{ display:inline-block; width:7px; height:7px; border-radius:50%; margin-left:6px; vertical-align:1px; }
@@ -417,8 +416,6 @@
     <p style="font-size:.8rem;color:var(--sub);margin:8px 2px 0;line-height:1.7">色が付いている場所＝この種目で効かせる筋肉。動作中はここに力が入っているかを意識してください。</p>
   </div>
 </div>
-
-<div class="kbbar" id="kbbar"><button id="kbdone" type="button">完了</button></div>
 
 <div class="toast" id="toast"></div>
 
@@ -647,7 +644,7 @@ const SEED = {
 /* ===== バージョン（デプロイのたびに更新）＋最新版取得 =====
    SWなし運用のため通常はHTTPキャッシュ（GitHub Pages 約10分）だけが古さの原因。
    「最新版に更新」＝クエリ付き再読込でHTTPキャッシュを確実に飛ばす。localStorageは無関係（消えない） */
-const APP_VER = '2026-07-21.1';
+const APP_VER = '2026-07-21.2';
 document.getElementById('verLabel').textContent = APP_VER;
 document.getElementById('reloadBtn').addEventListener('click', ()=>{
   location.replace(location.pathname + '?r=' + Date.now());
@@ -1172,58 +1169,18 @@ document.querySelectorAll('.overlay').forEach(ov=>{
   ov.addEventListener('click', e=>{ if(e.target===ov || e.target.dataset.close!=null) ov.classList.remove('on'); });
 });
 
-/* キーボード上の完了バー
-   ・キーボードが実際にせり上がってから表示する（focusin直後は出さない）＝
-     画面中央や上端に一瞬フラッシュして「URLバーのように見える」誤動作を根絶。
-   ・standalone（ホーム画面アプリ）でない＝Safariのタブの時は、Safari自身の
-     URLバーが入力時にキーボードの上へ浮く。これはサイト側JSからは消せないため、
-     ホーム画面アイコンから開くよう1回だけ案内する。 */
-const kbbar = document.getElementById('kbbar');
-const IS_STANDALONE = (window.navigator.standalone === true) ||
-  (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
-let kbWanted = false;
-function keyboardUp(){
-  const vv = window.visualViewport;
-  if(!vv) return true;                                            // 旧iOS：判定不可→出す
-  return (window.innerHeight - (vv.offsetTop + vv.height)) > 90;  // 下に隠れた分＝キーボード
-}
-function placeKbbar(){
-  const vv = window.visualViewport;
-  if(kbWanted && keyboardUp()){
-    if(vv){ kbbar.style.bottom='auto'; kbbar.style.top = Math.max(0, vv.offsetTop + vv.height - kbbar.offsetHeight) + 'px'; }
-    else  { kbbar.style.top='auto'; kbbar.style.bottom='0'; }
-    kbbar.classList.add('on');
-  } else {
-    kbbar.classList.remove('on');
-  }
-}
+/* 入力中はフッター（履歴/レスト/Claudeにコピー）を隠す＝キーボードの上に浮いて中央が
+   ごちゃつくのを防ぐ。数字キーパッドの「閉じる」はiOS標準のフォーム補助バー〈∧∨✓〉が
+   出すので、アプリ独自の完了バーは持たない（重複・位置ズレの原因だったため廃止）。 */
 document.addEventListener('focusin', e=>{
-  if(e.target.matches('input:not([type=date]),textarea')){
-    kbWanted = true;
-    requestAnimationFrame(placeKbbar);
-    setTimeout(placeKbbar, 350);                                 // resizeが来ない端末の保険
-  }
+  if(e.target.matches('input:not([type=date]),textarea')) document.body.classList.add('kbon');
 });
 document.addEventListener('focusout', ()=>{
   setTimeout(()=>{
     const a = document.activeElement;
-    if(!a || !a.matches('input:not([type=date]),textarea')){ kbWanted = false; kbbar.classList.remove('on'); }
+    if(!a || !a.matches('input:not([type=date]),textarea')) document.body.classList.remove('kbon');
   }, 80);
 });
-if(window.visualViewport){
-  visualViewport.addEventListener('resize', placeKbbar);
-  visualViewport.addEventListener('scroll', placeKbbar);
-}
-document.getElementById('kbdone').addEventListener('pointerdown', e=>{
-  e.preventDefault();
-  kbWanted = false;
-  if(document.activeElement) document.activeElement.blur();
-  kbbar.classList.remove('on');
-});
-/* Safariのタブで開いている時だけ、URLバー回避の案内を1回出す（standaloneなら不要） */
-if(!IS_STANDALONE){
-  setTimeout(()=> toast('💡 ホーム画面のアイコンから開くと、入力時に出るURLバーが消えて使いやすくなります', null, null, 6500), 700);
-}
 
 /* toast（actLabel/actFn を渡すと「元に戻す」等のアクション付きになる） */
 let toastT;
