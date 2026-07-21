@@ -647,7 +647,7 @@ const SEED = {
 /* ===== バージョン（デプロイのたびに更新）＋最新版取得 =====
    SWなし運用のため通常はHTTPキャッシュ（GitHub Pages 約10分）だけが古さの原因。
    「最新版に更新」＝クエリ付き再読込でHTTPキャッシュを確実に飛ばす。localStorageは無関係（消えない） */
-const APP_VER = '2026-07-21';
+const APP_VER = '2026-07-21.1';
 document.getElementById('verLabel').textContent = APP_VER;
 document.getElementById('reloadBtn').addEventListener('click', ()=>{
   location.replace(location.pathname + '?r=' + Date.now());
@@ -1172,21 +1172,42 @@ document.querySelectorAll('.overlay').forEach(ov=>{
   ov.addEventListener('click', e=>{ if(e.target===ov || e.target.dataset.close!=null) ov.classList.remove('on'); });
 });
 
-/* キーボード上の完了バー */
+/* キーボード上の完了バー
+   ・キーボードが実際にせり上がってから表示する（focusin直後は出さない）＝
+     画面中央や上端に一瞬フラッシュして「URLバーのように見える」誤動作を根絶。
+   ・standalone（ホーム画面アプリ）でない＝Safariのタブの時は、Safari自身の
+     URLバーが入力時にキーボードの上へ浮く。これはサイト側JSからは消せないため、
+     ホーム画面アイコンから開くよう1回だけ案内する。 */
 const kbbar = document.getElementById('kbbar');
-function placeKbbar(){
-  if(!kbbar.classList.contains('on')) return;
+const IS_STANDALONE = (window.navigator.standalone === true) ||
+  (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+let kbWanted = false;
+function keyboardUp(){
   const vv = window.visualViewport;
-  if(vv){ kbbar.style.top = Math.max(0, vv.offsetTop + vv.height - kbbar.offsetHeight) + 'px'; }
-  else { kbbar.style.top = 'auto'; kbbar.style.bottom = '0'; }
+  if(!vv) return true;                                            // 旧iOS：判定不可→出す
+  return (window.innerHeight - (vv.offsetTop + vv.height)) > 90;  // 下に隠れた分＝キーボード
+}
+function placeKbbar(){
+  const vv = window.visualViewport;
+  if(kbWanted && keyboardUp()){
+    if(vv){ kbbar.style.bottom='auto'; kbbar.style.top = Math.max(0, vv.offsetTop + vv.height - kbbar.offsetHeight) + 'px'; }
+    else  { kbbar.style.top='auto'; kbbar.style.bottom='0'; }
+    kbbar.classList.add('on');
+  } else {
+    kbbar.classList.remove('on');
+  }
 }
 document.addEventListener('focusin', e=>{
-  if(e.target.matches('input:not([type=date]),textarea')){ kbbar.classList.add('on'); requestAnimationFrame(placeKbbar); }
+  if(e.target.matches('input:not([type=date]),textarea')){
+    kbWanted = true;
+    requestAnimationFrame(placeKbbar);
+    setTimeout(placeKbbar, 350);                                 // resizeが来ない端末の保険
+  }
 });
 document.addEventListener('focusout', ()=>{
   setTimeout(()=>{
     const a = document.activeElement;
-    if(!a || !a.matches('input:not([type=date]),textarea')) kbbar.classList.remove('on');
+    if(!a || !a.matches('input:not([type=date]),textarea')){ kbWanted = false; kbbar.classList.remove('on'); }
   }, 80);
 });
 if(window.visualViewport){
@@ -1195,13 +1216,18 @@ if(window.visualViewport){
 }
 document.getElementById('kbdone').addEventListener('pointerdown', e=>{
   e.preventDefault();
+  kbWanted = false;
   if(document.activeElement) document.activeElement.blur();
   kbbar.classList.remove('on');
 });
+/* Safariのタブで開いている時だけ、URLバー回避の案内を1回出す（standaloneなら不要） */
+if(!IS_STANDALONE){
+  setTimeout(()=> toast('💡 ホーム画面のアイコンから開くと、入力時に出るURLバーが消えて使いやすくなります', null, null, 6500), 700);
+}
 
 /* toast（actLabel/actFn を渡すと「元に戻す」等のアクション付きになる） */
 let toastT;
-function toast(msg, actLabel, actFn){
+function toast(msg, actLabel, actFn, ms){
   const el = document.getElementById('toast');
   el.textContent = msg;
   if(actLabel){
@@ -1215,7 +1241,7 @@ function toast(msg, actLabel, actFn){
   }
   el.classList.add('on');
   clearTimeout(toastT);
-  toastT = setTimeout(()=>el.classList.remove('on','act'), actLabel ? 5000 : 1800);
+  toastT = setTimeout(()=>el.classList.remove('on','act'), ms || (actLabel ? 5000 : 1800));
 }
 
 /* レスト・ストップウォッチ（押すと0から数え上げ・もう一度押すとリセット。カウントダウンではない）
