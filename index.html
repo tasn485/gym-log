@@ -202,6 +202,14 @@
   .chip:active{ background:var(--accent-dim); color:var(--accent); border-color:var(--accent); opacity:1; }
   .chip.free{ border-style:dashed; background:none; color:var(--accent); }
   .grouplabel{ font-size:var(--fs-cap); color:var(--sub); font-weight:700; margin:18px 2px 10px; letter-spacing:.05em; }
+  .grouplabel.fin{ color:var(--accent); }
+  .grouplabel:first-child{ margin-top:4px; }
+  .chip.fin{ border-color:var(--accent); color:var(--accent); background:var(--accent-dim); }
+  .chip.added{ background:var(--accent-dim); color:var(--accent); border-color:var(--accent); }
+  .fincap{ font-size:var(--fs-cap); color:var(--sub); margin:8px 2px 4px; line-height:1.7; }
+  .sheet-done{ width:100%; border:1px solid var(--line2); background:var(--card2); color:var(--ink); font-weight:700; border-radius:12px; padding:14px; font-size:var(--fs-body); margin-top:18px; min-height:48px; }
+  .sheet-done:active{ opacity:.8; }
+  .addex.fin{ margin-top:-8px; }
 
   .histitem{ display:flex; align-items:center; gap:10px; padding:13px 2px; border-bottom:1px solid var(--line); }
   .histitem .hd{ font-weight:700; font-size:var(--fs-body); font-variant-numeric:tabular-nums; }
@@ -273,6 +281,7 @@
   <div id="warmup"></div>
   <div id="exercises"></div>
   <button class="addex" id="addEx">＋ 種目を追加</button>
+  <button class="addex fin" id="addFinisher">💪 物足りない？ 追い足し種目</button>
   <div id="cooldown"></div>
 
   <div class="snote-wrap">
@@ -299,6 +308,7 @@
   <div class="sheet">
     <h2>種目を追加 <button class="x" data-close>✕</button></h2>
     <div id="addChips"></div>
+    <button class="sheet-done" id="addDone">完了</button>
   </div>
 </div>
 
@@ -550,6 +560,25 @@ const MASTER = ['チェストプレス','ショルダープレス','サイドレ
   'ヒップスラスト','B-スタンス片脚ヒップスラスト','ルーマニアンDL','レッグプレス','レッグカール','ケーブルキックバック','グルートブリッジ','ヒップアブダクション',
   'パロフプレス','デッドバグ','プランク','アブドミナル','カーフレイズ','傾斜トレッドミル','スミス・ベントオーバーロー','プリチャーカール'];
 
+/* 追加パネルの部位グループ（探しやすさ用・その日のメニューは別枠で先頭表示） */
+const BODY_GROUPS = [
+  ['胸・肩・腕', ['チェストプレス','ショルダープレス','サイドレイズ','フレンチプレス','キックバック','トライセッププレスダウン','ダンベルカール','ハンマーカール','プリチャーカール']],
+  ['背中', ['ラットプルダウン(ワイド)','ラットプルダウン','ワンハンド・ダンベルロー','リアレイズ','フェイスプル','スミス・ベントオーバーロー']],
+  ['お尻・脚', ['ヒップスラスト','B-スタンス片脚ヒップスラスト','ルーマニアンDL','レッグプレス','レッグカール','ケーブルキックバック','グルートブリッジ','ヒップアブダクション','カーフレイズ']],
+  ['体幹・有酸素', ['パロフプレス','デッドバグ','プランク','アブドミナル','傾斜トレッドミル']]
+];
+
+/* 「物足りない時の追い足し」＝各日の狙いに合った"軽めフィニッシャー"（低疲労・翌日に響きにくい）。
+   重い複合種目を足すと週6の回復を削るため、追い足しはお尻/中臀/後肩/カーフ/体幹などの低CNS種目に限定する。 */
+const FINISHER = {
+  '月':[['サイドレイズ','肩の焼き切り・軽め高レップ（低疲労）'],['トライセッププレスダウン','二の腕裏をもう一押し（翌日プルに響きにくい）']],
+  '火':[['フェイスプル','後肩・姿勢の低疲労フィニッシャー'],['ヒップアブダクション','中臀筋の追い込み（背中と非干渉）']],
+  '水':[['グルートブリッジ','お尻の焼き切り20-25回（低CNS）'],['ヒップアブダクション','中臀筋の追い込み']],
+  '木':[['フェイスプル','後肩・姿勢の低疲労フィニッシャー'],['プランク','体幹の抗伸展をもう1セット']],
+  '土':[['グルートブリッジ','お尻の焼き切り20-25回（土の本番フィニッシャー）'],['ヒップアブダクション','中臀筋の追い込み']],
+  '日':[['カーフレイズ','ふくらはぎ・低疲労の尺埋め'],['グルートブリッジ','お尻の焼き切り']]
+};
+
 /* ===== 過去ログの焼き込み（SEED・log.md由来 2026-07-06〜07-16） =====
    プライベートブラウズだとlocalStorageが毎回消えるため、履歴はこのSEEDから描画する。
    localStorageに同じ日付の記録があればそちら優先（histAll のObject.assign順）。
@@ -618,7 +647,7 @@ const SEED = {
 /* ===== バージョン（デプロイのたびに更新）＋最新版取得 =====
    SWなし運用のため通常はHTTPキャッシュ（GitHub Pages 約10分）だけが古さの原因。
    「最新版に更新」＝クエリ付き再読込でHTTPキャッシュを確実に飛ばす。localStorageは無関係（消えない） */
-const APP_VER = '2026-07-18.1';
+const APP_VER = '2026-07-21';
 document.getElementById('verLabel').textContent = APP_VER;
 document.getElementById('reloadBtn').addEventListener('click', ()=>{
   location.replace(location.pathname + '?r=' + Date.now());
@@ -946,28 +975,51 @@ document.getElementById('nextDay').addEventListener('click', ()=> shiftDay(1));
 function shiftDay(n){ save(); const d=new Date(curDate+'T00:00:00'); d.setDate(d.getDate()+n); loadSession(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`); }
 
 document.getElementById('menu').addEventListener('change', e=>{
-  const dow = e.target.value; cur.day = dow;
+  const dow = e.target.value;
   const preset = dayEx(dow, curDate);
-  const existing = new Set(cur.exercises.map(x=>x.name));
-  const toAdd = preset.filter(n=> !existing.has(n));
-  if(toAdd.length){
-    toAdd.forEach(name=> cur.exercises.push({ name, sets:[{w:'',r:''}], note:'' }));
-    toast(`${DAYS[dow].label.split('・')[0]}の種目を追加`);
-  }
+  /* スマート置換（曜日振替のゴミ残りを根絶）：
+     記録（重量/回数/メモ）が入った種目は残し、空の旧種目は新メニューへ入れ替える。
+     何も入れていなければ純粋に新しい曜日の構成へ。破壊的な「組み直す」を使う場面をほぼ無くす */
+  const hasInput = ex => ex.note.trim() || ex.sets.some(st=> String(st.w).trim()!=='' || String(st.r).trim()!=='');
+  const kept = cur.exercises.filter(hasInput);
+  const keptNames = new Set(kept.map(x=>x.name));
+  const dropped = cur.exercises.length - kept.length;
+  preset.forEach(name=>{ if(!keptNames.has(name)){ kept.push({ name, sets:[{w:'',r:''}], note:'' }); keptNames.add(name); } });
+  cur.exercises = kept;
+  cur.day = dow;
   save(); render();
+  const head = DAYS[dow].label.split('・')[0];
+  toast(dropped>0 ? `${head}のメニューに切替（空の種目は入れ替え）` : `${head}のメニューに切替`);
 });
 
-/* 種目追加シート */
+/* 種目追加シート（複数追加OK＝タップごとに閉じない・部位別グループ・追い足し枠を先頭に） */
 const addSheet = document.getElementById('addSheet');
-document.getElementById('addEx').addEventListener('click', ()=>{
+function openAddSheet(){
   const box = document.getElementById('addChips');
   const dow = cur.day;
   const todayEx = dayEx(dow, curDate);
-  const others = MASTER.filter(n=> !todayEx.includes(n));
-  box.innerHTML =
-    (todayEx.length? `<div class="grouplabel">${DAYS[dow].label} の種目</div><div class="chipgrid">${todayEx.map(chip).join('')}</div>`:'') +
-    `<div class="grouplabel">その他の種目</div><div class="chipgrid">${others.map(chip).join('')}<button class="chip free" data-free>＋ 自由入力</button></div>`;
+  const fin = FINISHER[dow] || [];
+  const finHtml = fin.length
+    ? `<div class="grouplabel fin">💪 物足りない時の追い足し</div><div class="chipgrid">${fin.map(([n])=>`<button class="chip fin" data-add="${escAttr(n)}">${escHtml(n)}</button>`).join('')}</div>`
+      + `<p class="fincap">${fin.map(([n,why])=>`${escHtml(n)}＝${escHtml(why)}`).join('<br>')}</p>`
+    : '';
+  const todayHtml = todayEx.length
+    ? `<div class="grouplabel">${escHtml(DAYS[dow].label)} の種目</div><div class="chipgrid">${todayEx.map(chip).join('')}</div>`
+    : '';
+  const groupsHtml = BODY_GROUPS.map(([label, names])=>{
+    const list = names.filter(n=> !todayEx.includes(n));
+    return list.length ? `<div class="grouplabel">${escHtml(label)}</div><div class="chipgrid">${list.map(chip).join('')}</div>` : '';
+  }).join('');
+  box.innerHTML = finHtml + todayHtml + groupsHtml
+    + `<div class="grouplabel">その他</div><div class="chipgrid"><button class="chip free" data-free>＋ 自由入力</button></div>`;
   addSheet.classList.add('on');
+  const sh = document.querySelector('#addSheet .sheet'); if(sh) sh.scrollTop = 0;
+}
+document.getElementById('addEx').addEventListener('click', openAddSheet);
+document.getElementById('addFinisher').addEventListener('click', openAddSheet);
+document.getElementById('addDone').addEventListener('click', ()=>{
+  addSheet.classList.remove('on');
+  window.scrollTo({ top:document.body.scrollHeight, behavior:'smooth' });
 });
 /* この日のメニューを組み直す：曜日振替後に古い種目が残った時、DATE_OVERRIDES/曜日プリセットの正しい構成へ戻す（記録は消える・元に戻す付き） */
 document.getElementById('resetDay').addEventListener('click', ()=>{
@@ -993,8 +1045,10 @@ document.getElementById('addChips').addEventListener('click', e=>{
   let name = t.dataset.add;
   if(t.dataset.free!=null){ name = (prompt('種目名を入力')||'').trim(); if(!name) return; }
   cur.exercises.push({ name, sets:[{w:'',r:''}], note:'' });
-  save(); render(); addSheet.classList.remove('on');
-  window.scrollTo({ top:document.body.scrollHeight, behavior:'smooth' });
+  save(); render();
+  // シートは閉じない＝続けて複数追加できる。追加したchipには✓印を付ける（「完了」で閉じる）
+  if(t.dataset.add!=null){ t.classList.add('added'); t.textContent = '✓ ' + name; }
+  toast(`「${name}」を追加（続けて選べます）`);
 });
 
 /* 種目別の重量推移スパークライン（数字が主役のミニ折れ線） */
