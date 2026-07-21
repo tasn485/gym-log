@@ -256,6 +256,23 @@
   @media (max-width:359px){
     .field input{ width:64px; font-size:1.15rem; }
   }
+  /* ジム滞在時間の打刻 */
+  .gymtime{ display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    background:var(--card); background-image:var(--card-grad); border:1px solid var(--line);
+    border-radius:14px; padding:11px 13px; margin-bottom:14px; box-shadow:var(--shadow); }
+  .gymtime .gt-ico{ font-size:1.15rem; line-height:1; flex:none; }
+  .gymtime .gt-main{ flex:1 1 auto; min-width:0; display:flex; flex-direction:column; gap:2px; }
+  .gymtime .gt-lead{ font-size:var(--fs-cap); font-weight:700; color:var(--accent); letter-spacing:.06em; }
+  .gymtime .gt-val{ font-size:1.02rem; font-weight:700; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .gymtime .gt-val .arrow{ color:var(--sub); margin:0 5px; font-weight:600; }
+  .gymtime .gt-val .stay{ color:var(--accent); }
+  .gymtime .gt-clear.wide{ width:auto; padding:0 14px; font-size:.9rem; font-weight:600; }
+  .gymtime .gt-btn{ flex:none; height:40px; padding:0 15px; border-radius:11px; border:none; font-weight:700; font-size:.92rem;
+    background:var(--accent-grad); color:#04211d; box-shadow:var(--shadow-accent); }
+  .gymtime .gt-btn.stop{ background:var(--card2); color:var(--ink); border:1px solid var(--line2); box-shadow:none; }
+  .gymtime .gt-clear{ flex:none; height:40px; width:40px; border-radius:11px; border:1px solid var(--line); background:var(--card2); color:var(--sub); font-size:1rem; }
+  .gymtime.run{ border-color:var(--accent); box-shadow:var(--shadow-accent); }
+  .hsub .hgt{ display:inline-block; margin-left:8px; font-size:var(--fs-cap); color:var(--accent); font-weight:700; font-variant-numeric:tabular-nums; }
 </style>
 </head>
 <body>
@@ -276,6 +293,7 @@
 </header>
 
 <div class="wrap">
+  <div id="gymtime" class="gymtime"></div>
   <div id="banner"></div>
   <div id="warmup"></div>
   <div id="exercises"></div>
@@ -644,7 +662,7 @@ const SEED = {
 /* ===== バージョン（デプロイのたびに更新）＋最新版取得 =====
    SWなし運用のため通常はHTTPキャッシュ（GitHub Pages 約10分）だけが古さの原因。
    「最新版に更新」＝クエリ付き再読込でHTTPキャッシュを確実に飛ばす。localStorageは無関係（消えない） */
-const APP_VER = '2026-07-21.2';
+const APP_VER = '2026-07-22.1';
 document.getElementById('verLabel').textContent = APP_VER;
 document.getElementById('reloadBtn').addEventListener('click', ()=>{
   location.replace(location.pathname + '?r=' + Date.now());
@@ -660,7 +678,7 @@ function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch
 function save(){
   // 空セッション（種目ゼロ かつ メモ無し）は保存しない
   const s = cur;
-  const hasData = s && (s.note.trim() || s.exercises.some(e=> e.note.trim() || e.sets.some(st=> String(st.w).trim()!=='' || String(st.r).trim()!=='')));
+  const hasData = s && (s.startAt || s.note.trim() || s.exercises.some(e=> e.note.trim() || e.sets.some(st=> String(st.w).trim()!=='' || String(st.r).trim()!=='')));
   if(hasData){ sessions[s.date] = s; } else { delete sessions[s.date]; }
   localStorage.setItem(KEY, JSON.stringify(sessions));
   const dot = document.getElementById('savedDot');
@@ -686,6 +704,7 @@ function loadSession(date){
   document.getElementById('snote').value = cur.note;
   renderMenu();
   render();
+  renderGymTime();
 }
 
 /* 直近の同名種目の記録（前回値） */
@@ -864,6 +883,8 @@ function summarize(sets){
 function buildText(s){
   const label = DAYS[s.day || dowOf(s.date)]?.label || '';
   const lines = [`### ${s.date}(${dowOf(s.date)}) ${label}`];
+  if(s.startAt){ const st=stayMin(s.startAt,s.endAt);
+    lines.push(`ジム時間：${s.startAt}${s.endAt?`〜${s.endAt}`:'〜（終了未打刻）'}${st!=null?`（${fmtStay(st)}）`:''}`); }
   s.exercises.forEach(ex=>{
     const body = summarize(ex.sets);
     if(!body && !ex.note.trim()) return;
@@ -1021,19 +1042,20 @@ document.getElementById('addDone').addEventListener('click', ()=>{
 /* この日のメニューを組み直す：曜日振替後に古い種目が残った時、DATE_OVERRIDES/曜日プリセットの正しい構成へ戻す（記録は消える・元に戻す付き） */
 document.getElementById('resetDay').addEventListener('click', ()=>{
   const label = (DAYS[cur.day] && DAYS[cur.day].label) ? DAYS[cur.day].label.split('・')[0] : cur.day;
-  if(!confirm(`${curDate}（${cur.day}）のメニューを「${label}」の正しい構成に組み直します。\nこの日に入力した重量・回数・メモは消えます。よろしいですか？`)) return;
+  if(!confirm(`${curDate}（${cur.day}）のメニューを「${label}」の正しい構成に組み直します。\nこの日に入力した重量・回数・メモは消えます（ジム時間の打刻は残ります）。よろしいですか？`)) return;
   const prev = sessions[curDate] ? JSON.parse(JSON.stringify(sessions[curDate])) : null;
   delete sessions[curDate];
   cur = newSession(curDate);
-  localStorage.setItem(KEY, JSON.stringify(sessions));
+  if(prev && prev.startAt){ cur.startAt = prev.startAt; if(prev.endAt) cur.endAt = prev.endAt; }
+  save();
   document.getElementById('snote').value = cur.note;
-  renderMenu(); render();
+  renderMenu(); render(); renderGymTime();
   toast('メニューを組み直しました', '元に戻す', ()=>{
     if(prev){ sessions[curDate] = prev; cur = JSON.parse(JSON.stringify(prev)); }
     else { cur = newSession(curDate); }
     localStorage.setItem(KEY, JSON.stringify(sessions));
     document.getElementById('snote').value = cur.note;
-    renderMenu(); render();
+    renderMenu(); render(); renderGymTime();
   });
 });
 function chip(n){ return `<button class="chip" data-add="${escAttr(n)}">${escHtml(n)}</button>`; }
@@ -1092,7 +1114,9 @@ function renderHist(){
       }).filter(Boolean).join('');
       if(!rows) return '';
       const openBtn = sessions[d] ? `<button class="go" data-go="${d}">開く</button>` : '';
-      return `<div class="histday"><div class="histitem"><div><div class="hd">${d}（${dowOf(d)}）</div><div class="hsub">${sub}</div></div>${openBtn}</div><div class="hxwrap">${rows}</div></div>`;
+      const gst = stayMin(s.startAt, s.endAt);
+      const gbadge = s.startAt ? `<span class="hgt">🏋 ${s.startAt}${s.endAt?`–${s.endAt}`:''}${gst!=null?` ・ ${fmtStay(gst)}`:''}</span>` : '';
+      return `<div class="histday"><div class="histitem"><div><div class="hd">${d}（${dowOf(d)}）</div><div class="hsub">${sub}${gbadge}</div></div>${openBtn}</div><div class="hxwrap">${rows}</div></div>`;
     }).filter(Boolean).join('');
     list.innerHTML = html || empty;
   } else {
@@ -1234,6 +1258,60 @@ timerBtn.addEventListener('click', ()=>{
   const saved = +localStorage.getItem(TIMER_KEY);
   if(saved && Date.now()-saved < 30*60000) startTimer(saved);
 }
+
+/* ===== ジム滞在時間の打刻（レスト計測とは別。開始→終了を記録し、その日の滞在時間を残す） ===== */
+const gymEl = document.getElementById('gymtime');
+let gtInt = null;
+function nowHM(){ const d=new Date(); return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`; }
+function hmToMin(hm){ if(!/^\d{1,2}:\d{2}$/.test(hm||'')) return null; const [h,m]=hm.split(':').map(Number); return h*60+m; }
+function stayMin(a,b){ const s=hmToMin(a), e=hmToMin(b); if(s==null||e==null) return null; let d=e-s; if(d<0) d+=1440; return d; }
+function fmtStay(min){ if(min==null) return ''; const h=Math.floor(min/60), m=min%60; return h? `${h}時間${m>0?m+'分':''}` : `${m}分`; }
+function fmtLive(ms){ const s=Math.max(0,Math.floor(ms/1000)); const h=Math.floor(s/3600), m=Math.floor(s%3600/60), sec=s%60;
+  return h? `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}` : `${m}:${String(sec).padStart(2,'0')}`; }
+function renderGymTime(){
+  clearInterval(gtInt); gtInt=null;
+  const st=cur.startAt, en=cur.endAt;
+  gymEl.classList.remove('run');
+  if(!st){
+    gymEl.innerHTML = `<span class="gt-ico">🏋</span>`+
+      `<div class="gt-main"><span class="gt-lead">ジム滞在時間</span>`+
+      `<span class="gt-val" style="color:var(--sub);font-weight:600">まだ開始していません</span></div>`+
+      `<button class="gt-btn" data-gt="start">▶ 開始を打刻</button>`;
+    return;
+  }
+  if(!en){
+    gymEl.classList.add('run');
+    gymEl.innerHTML = `<span class="gt-ico">🏋</span>`+
+      `<div class="gt-main"><span class="gt-lead">計測中 ・ 開始 ${st}</span>`+
+      `<span class="gt-val" id="gtLive">…</span></div>`+
+      `<button class="gt-btn stop" data-gt="stop">⏹ 終了を打刻</button>`+
+      `<button class="gt-clear wide" data-gt="clear">キャンセル</button>`;
+    const live = document.getElementById('gtLive');
+    if(curDate===todayStr()){
+      const base = new Date(curDate+'T'+st+':00').getTime();
+      const tick=()=>{ live.textContent = '経過 '+fmtLive(Date.now()-base); };
+      tick(); gtInt=setInterval(tick, 1000);
+    } else { live.textContent='開始のみ記録（別日）'; }
+    return;
+  }
+  const stay = stayMin(st,en);
+  gymEl.innerHTML = `<span class="gt-ico">🏋</span>`+
+    `<div class="gt-main"><span class="gt-lead">ジム滞在時間</span>`+
+    `<span class="gt-val">${st}<span class="arrow">→</span>${en}<span class="stay">　${fmtStay(stay)}</span></span></div>`+
+    `<button class="gt-clear wide" data-gt="clear">やり直す</button>`;
+}
+gymEl.addEventListener('click', e=>{
+  const b=e.target.closest('button[data-gt]'); if(!b) return;
+  const a=b.dataset.gt;
+  if(a==='start'){ cur.startAt=nowHM(); cur.endAt=''; save(); renderGymTime(); }
+  else if(a==='stop'){ cur.endAt=nowHM(); save(); renderGymTime(); }
+  else if(a==='clear'){
+    if(!confirm('ジム時間の記録をキャンセルしますか？\n開始時刻・経過はすべて消えて、次に開始するとゼロからやり直しになります。')) return;
+    delete cur.startAt; delete cur.endAt; save(); renderGymTime();
+  }
+});
+/* 時刻の手修正は廃止（画面表示は経過時間なので、あとから実時刻を打ち直しても意味が薄い）。
+   直したい時は「キャンセル」で記録を消し、開始し直す＝経過は必ずゼロから始まる */
 
 /* ライト/ダーク切替（保存される） */
 const THEME_KEY = 'gymlog_theme_v1';
