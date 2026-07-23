@@ -104,6 +104,7 @@
   .ex-name small{ font-weight:500; color:var(--sub); font-size:var(--fs-cap); margin-left:6px; white-space:nowrap; }
   .ex-del{ border:none; background:none; color:var(--sub); font-size:var(--fs-cap); padding:10px 2px 10px 12px; flex:none; opacity:.75; }
   .cue-line{ font-size:var(--fs-body); color:var(--sub); margin:0 0 4px; line-height:1.65; }
+  .perside-hint{ font-size:var(--fs-cap); color:var(--accent); margin:0 0 6px; line-height:1.55; font-weight:600; }
 
   details.cue{ margin:0 0 6px; }
   details.cue>summary{ list-style:none; cursor:pointer; color:var(--sub); font-size:var(--fs-cap); font-weight:600; padding:9px 0; display:flex; align-items:center; }
@@ -510,15 +511,15 @@ const META = {
   'ダンベルカール':{ gear:'ダンベル', muscle:'上腕二頭筋', weight:'片手4kg', wlabel:'<span class="dot g"></span>', setrep:'3×12-15', rest:'60秒',
     cues:['strict（反動を使わない）','腕は弱点＝丁寧に'], alt:'プリチャーカール台も可', prog:'楽になったら+1〜2kg' },
   'ヒップアブダクション':{ gear:'アウターサイ・マシン', muscle:'中臀筋', weight:'working27kg／挑戦32kg（崩れない日の最終1本のみ）', wlabel:'<span class="dot g"></span>', setrep:'27kg×8-11×2-3（+ W-up 23×15×1）', rest:'60秒',
-    cues:['上体を少し前傾させると狙いの中臀筋に乗る（直立/後傾は大臀筋寄り）','X脚の中臀筋を強化','「開いた位置からさらに開く」刻みより通常フルレンジ＋頂点1秒キープが効く','「股間が外れる」感が出たセットは23kgへ戻して質を優先'], prog:'2026-07-21にworking23→27kg・挑戦27→32kgへ格上げ（本人指示）。32kgを全セット崩さず出せた日が続いたら挑戦本数を2〜3本へ増やす' },
-  'ヒップスラスト':{ gear:'スミス＋ベンチ', muscle:'大殿筋', weight:'計15kg（両側7.5kgずつ・プレート左右合計表記）＋宮崎台スミスのバー20kg＝総負荷35kg', wlabel:'<span class="dot g"></span>', setrep:'水3〜4×8-12／土4×10-12（頂点2秒キープ）', rest:'90〜120秒', progLock:true,
-    cues:['バーは脚の付け根（恥骨のすぐ上・ヒップクリース）に置きパッドを巻く（お腹寄り・もも寄りはNG）','フルROMで下げる','頂点で骨盤を後傾させてお尻をロック（土曜は2秒キープの収縮重視で水曜と差別化）','腰を反らせない（反り腰の矯正にもなる）','反動を使わない'], prog:'計15kg×10-12×4が頂点2秒キープでクリーンに2週続いたら計20kg（両側10kgずつ）を最終セットのみテスト' },
-  'ルーマニアンDL':{ gear:'ダンベル/スミス', muscle:'ハムストリング・大殿筋', weight:'空バー〜+5kg', wlabel:'<span class="dot y"></span>', setrep:'3×8-10', rest:'90〜120秒', progLock:true,
-    cues:['尻を後ろへ引く（ヒンジ）','膝は軽く曲げて固定・伸ばしきらない','背中はまっすぐ','もも裏が伸びて背が丸まる直前で止める'], prog:'フォームが安定するまで重量は増やさない' },
+    cues:['中臀筋（X脚の狙い）は"直立〜わずかに後傾"で乗る／前傾は大臀筋"上部"寄りに移る（旧「前傾＝中臀筋」は逆と判明し訂正 2026-07-23・Contreras系EMG）','どの角度でも中臀・小臀・大臀上部は働き変わるのは"強調"だけ／マシン自体が主に中臀・小臀のツール','X脚の中臀筋を強化','「開いた位置からさらに開く」刻みより通常フルレンジ＋頂点1秒キープが効く','「外れそう」感＝開きすぎ・前傾しすぎ・重すぎのサイン→直立に戻す＋エンドレンジ手前で止める＋手アシストなし（それでも出れば23kgへ）'], prog:'2026-07-21にworking23→27kg・挑戦27→32kgへ格上げ（本人指示）。32kgを全セット崩さず出せた日が続いたら挑戦本数を2〜3本へ増やす' },
+  'ヒップスラスト':{ gear:'スミス＋ベンチ', muscle:'大殿筋', weight:'片側7.5kg（両側計15kg＋バー）／宮崎台スミスのバー20kg', wlabel:'<span class="dot g"></span>', setrep:'水3〜4×8-12／土4×10-12（頂点2秒キープ）', rest:'90〜120秒', progLock:true, perSide:true,
+    cues:['バーは脚の付け根（恥骨のすぐ上・ヒップクリース）に置きパッドを巻く（お腹寄り・もも寄りはNG）','ランプ（軽い1本）→本番3〜4本の"きついセット"（本番3〜4×8-12）','フルROMで下げる','頂点で骨盤を後傾させてお尻をロック（土曜は2秒キープの収縮重視で水曜と差別化）','腰を反らせない（反り腰の矯正にもなる）','反動を使わない'], prog:'片側7.5kg×10-12×4が頂点2秒キープでクリーンに2週続いたら片側10kg（両側計20kg）を最終セットのみテスト' },
+  'ルーマニアンDL':{ gear:'ダンベル/スミス', muscle:'ハムストリング・大殿筋', weight:'片側5kg〜（空バー可）', wlabel:'<span class="dot y"></span>', setrep:'3×8-10', rest:'90〜120秒', progLock:true, perSide:true,
+    cues:['握りはフルグリップ（順手・親指を巻く）＝サムレスは滑って危険で非推奨（重い日に握力が切れたらストラップ）','肋骨を締めてブレース（腕は締めず肩幅で自然に垂らす・広背筋でバーを脛に密着）','尻を後ろへ引く＝股関節から折る（腰で曲げない）','膝は軽く曲げて固定・伸ばしきらない','重心はミッドフット（土踏まず〜やや前）','もも裏が伸びて背が丸まる直前で止める（床を追わない）','腰に効く＝連鎖が切れたサイン→軽くしてフォーム優先','上げは腰を反らすでなく股関節を前へ通す'], prog:'フォームが安定するまで重量は増やさない（台/デフィシットも後回し）' },
   'レッグプレス':{ gear:'マシン', muscle:'大殿筋・ハムストリング', weight:'100kg', wlabel:'<span class="dot g"></span>', setrep:'3〜4×10-12', rest:'90〜120秒',
-    cues:['足は高め・やや広め・つま先やや外','膝はロックしない','シートを近づけ深ROMで（浅い＝効かない・逃げる）。ただし腰がパッドから浮く直前で止める＝反り腰保護'], prog:'全セット挙げきれたら+5kg' },
+    cues:['足は高め・やや広め・つま先やや外','腰〜お尻の真上を座面にキュッと密着（浮く＝深すぎ→可動域を浅く）','踵〜ミッドフットで押す（かかとを浮かせない）','"背中とお尻で押す"は「腰を座面に貼り付けブレースして押す」の意味なら○／腰を反らせ浮かせるのは×','膝はロックしない','シートを近づけ深ROMで（浅い＝効かない・逃げる）。ただし腰がパッドから浮く直前で止める＝反り腰保護'], prog:'全セット挙げきれたら+5kg' },
   'レッグカール':{ gear:'マシン（シート型優先）', muscle:'ハムストリング', weight:'30〜32kg（35はふくらはぎ代償込み・実力値でない）', wlabel:'<span class="dot y"></span>', setrep:'3×10-12', rest:'60秒',
-    cues:['つま先を伸ばす（ポイント）＝ふくらはぎの代償を切ってハム主導に（ふくらはぎで押してる感の修正）','パッドはかかとのすぐ上・足は腰幅で平行（ピタッと揃えなくてよい）','骨盤・恥骨をパッドに押し付け腹圧で腰の反りを消す（腰が浮く＝腰で代償）','もも裏で膝を曲げる（主働＝ハムストリング）','下ろし3秒・反動なし','膝の回転軸をマシンの軸に合わせる'], alt:'うつ伏せ型でもOK（フルレンジ＋下ろし3秒）', prog:'「もも裏で曲げてる」感覚で30〜32×10-12がクリーンに揃って初めて35kg（7-16の35×10×2はふくらはぎ代償込み）' },
+    cues:['つま先をすねへ引く（背屈）＝ふくらはぎ（腓腹筋）のつり・代償を切る／旧「つま先を伸ばす（ポイント）」は逆効果と判明し訂正（2026-07-23）','ふくらはぎが多少効くのは普通・"つる/主役級に張る"のが代償→背屈＋重量ダウン','もも裏で膝を"引く"意識（足首・ふくらはぎで蹴らない）＝挙げ始めから頂点まで一貫してハムを感じる','パッドはかかとのすぐ上・足は腰幅で平行（ピタッと揃えなくてよい）','骨盤・恥骨をパッドに押し付け腹圧で腰の反りを消す（腰が浮く＝腰で代償）','下ろし3秒・反動なし（反動で弾くと腓腹筋・勢いに逃げる）','膝の回転軸をマシンの軸に合わせる'], alt:'うつ伏せ型でもOK（フルレンジ＋下ろし3秒）', prog:'「もも裏で曲げてる」感覚で30〜32×10-12がクリーンに揃って初めて35kg（7-16の35×10×2はふくらはぎ代償込み）' },
   'ケーブルキックバック':{ gear:'ケーブル', muscle:'大殿筋・中臀筋', weight:'左右各10kg（12kgは収縮が乗った日の最終セットのみ）', wlabel:'<span class="dot y"></span>', setrep:'3×12-15（左右各）', rest:'60秒', uni:true,
     cues:['動かす脚の膝は軽く曲げたままでOK・動作中に角度を変えない（曲げ伸ばしすると勢い/ハムに逃げる）','頂点で1秒お尻を締める（効かない主因は重量でなく収縮）','支持脚の膝を軽く曲げ骨盤を固定・上体やや前傾でマシンを掴んで固定','腰を反って高く上げない（高さでなくお尻の収縮で止める）','効かないうちは重量を上げず収縮を先に（10kg基準）'] },
   'プランク':{ gear:'自重', muscle:'体幹（抗伸展）', weight:'自重', wlabel:'<span class="dot g"></span>', setrep:'2〜3×60秒（秒で記録）', rest:'60秒', progLock:true,
@@ -662,7 +663,7 @@ const SEED = {
 /* ===== バージョン（デプロイのたびに更新）＋最新版取得 =====
    SWなし運用のため通常はHTTPキャッシュ（GitHub Pages 約10分）だけが古さの原因。
    「最新版に更新」＝クエリ付き再読込でHTTPキャッシュを確実に飛ばす。localStorageは無関係（消えない） */
-const APP_VER = '2026-07-22.3';
+const APP_VER = '2026-07-23.1';
 document.getElementById('verLabel').textContent = APP_VER;
 document.getElementById('reloadBtn').addEventListener('click', ()=>{
   location.replace(location.pathname + '?r=' + Date.now());
@@ -839,6 +840,7 @@ function exCard(ex,i){
   }
 
   const uni = !!(meta && meta.uni);
+  const perSide = !!(meta && meta.perSide);
   const rows = ex.sets.map((st,j)=>{
     const side = st.side || '';
     const lr = uni ? `<button class="lr${side?' on':''}" data-lr="${i}_${j}" aria-label="左右切替">${side==='L'?'左':side==='R'?'右':'—'}</button>` : '';
@@ -846,7 +848,7 @@ function exCard(ex,i){
     <div class="setrow${st.d?' done':''}${uni?' uni':''}">
       <button class="setno" data-done="${i}_${j}" aria-label="セット完了の切替">${st.d?'✓':j+1}</button>
       ${lr}
-      <span class="field"><input inputmode="decimal" data-f="w" data-e="${i}" data-s="${j}" value="${escAttr(st.w)}"><span class="u">kg</span></span>
+      <span class="field"><input inputmode="decimal" data-f="w" data-e="${i}" data-s="${j}" value="${escAttr(st.w)}"><span class="u">${perSide?'片側':'kg'}</span></span>
       <span class="times">×</span>
       <span class="field"><input inputmode="numeric" data-f="r" data-e="${i}" data-s="${j}" value="${escAttr(st.r)}"><span class="u">回</span></span>
       <button class="setdel" data-delset="${i}_${j}" aria-label="このセットを削除">✕</button>
@@ -859,6 +861,7 @@ function exCard(ex,i){
         <button class="ex-del" data-delex="${i}" aria-label="種目を削除">削除</button>
       </div>
       ${cueLine}
+      ${perSide?'<div class="perside-hint">※重量は<b>片側</b>（プレート片方）で入力／両側計＝入力×2＋バー</div>':''}
       ${cueDet}
       ${prevHtml}
       ${rows}
