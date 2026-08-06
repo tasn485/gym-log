@@ -480,6 +480,8 @@ const DAYS = {
 /* 日付指定の振替（イレギュラー日）：この日は指定曜日のメニューで開始する（未記録の日のみ有効）。ex指定があれば種目リストも差し替え */
 const DATE_OVERRIDES = {
   '2026-08-06': { day:'木', ex:['ラットプルダウン(ワイド)','ワンハンド・ダンベルロー','リアレイズ','パロフプレス','アブドミナル'],
+    target:'🩹 回復セッション＝発熱明けの慣らし（背中・後肩・体幹を軽く動かすだけ）',
+    session:'所要 約25〜30分／❌LISS・トレッドミルなし ❌自重種目なし ❌35kgテストなし／重量は通常の60〜83%・全種目2セット',
     note:'🩹 回復セッション（発熱明け）＝木曜の正規カード（背中プル#2）の代替。所要 約25〜30分・総負荷は通常木曜の約半分（セット数3→2・重量60〜83%・LISSカット）。'
       +'【経緯】8/4に38.2度＋喉／全身の関節痛で全休、8/5も全休。8/6朝に解熱し喉の痛みのみ残存＝首から上の症状のみのため軽い運動は可（🟡 neck check・臨床ガイドラインではない）。'
       +'【本人指示】自重種目とトレッドミルは入れない → マシン／ダンベルのみで構成し、W-upは1種目めの軽いセットで代用する。'
@@ -975,7 +977,7 @@ const SEED = {
 /* ===== バージョン（デプロイのたびに更新）＋最新版取得 =====
    SWなし運用のため通常はHTTPキャッシュ（GitHub Pages 約10分）だけが古さの原因。
    「最新版に更新」＝クエリ付き再読込でHTTPキャッシュを確実に飛ばす。localStorageは無関係（消えない） */
-const APP_VER = '2026-08-06';
+const APP_VER = '2026-08-06b';
 document.getElementById('verLabel').textContent = APP_VER;
 document.getElementById('reloadBtn').addEventListener('click', ()=>{
   location.replace(location.pathname + '?r=' + Date.now());
@@ -1062,7 +1064,12 @@ function sizeNotes(){
 
 /* 今日の狙いバナー＋ウォームアップ/クールダウン */
 function renderTop(){
-  const d = DAYS[cur.day] || {};
+  /* DATE_OVERRIDES に target/session があればバナーもその日専用の文言にする
+     （2026-08-06：種目だけ差し替えて帯が通常カードのままだと指示が矛盾する＝回復日にLISSの案内が出ていた） */
+  const ovT = DATE_OVERRIDES[curDate] || {};
+  const d = Object.assign({}, DAYS[cur.day] || {},
+    ovT.target!==undefined ? {target:ovT.target} : {},
+    ovT.session!==undefined ? {session:ovT.session} : {});
   const isRest = !dayEx(cur.day, curDate).length;
   let doneSets=0, totalSets=0;
   cur.exercises.forEach(ex=> ex.sets.forEach(st=>{ totalSets++; if(st.d) doneSets++; }));
